@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "manage.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "manage.py" }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "career_cast.settings",
+    "SECRET_KEY": "YOUR_SECRET_KEY",
+    "DEBUG": "False"
+  }
+}
