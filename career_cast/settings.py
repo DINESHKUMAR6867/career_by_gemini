@@ -6,8 +6,9 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'b+e10h^38@qa==t!rgom2*)av@rbudw)8rxjfg!dwoc_av2_kt'
 
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
