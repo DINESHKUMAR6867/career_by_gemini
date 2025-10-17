@@ -1,9 +1,13 @@
 {
   "version": 2,
-  "routes": [
+  "builds": [
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "src": "manage.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
     }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "manage.py" }
   ]
 }
