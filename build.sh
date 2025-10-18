@@ -3,11 +3,8 @@
 # Exit on error
 set -o errexit
 
-# Install SQLite3 dependencies
-apt-get update && apt-get install -y sqlite3 libsqlite3-dev
-
-# Install Python dependencies from requirements.txt
-python3 -m pip install -r requirements.txt
+# These commands will run as part of the Vercel "installCommand"
+# after the Python environment is set up and requirements are installed.
 
 # Run Django commands
 python3 manage.py collectstatic --no-input
