@@ -10,7 +10,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-development-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = "career-by-gemini.vercel.app"
+# career_cast/settings.py
+
+# ... other settings
+
+ALLOWED_HOSTS = [
+    # The Vercel subdomain for your current preview deployment:
+    'career-by-gemini-dj36rh528-tunguturidineshkumar-6538s-projects.vercel.app',
+    # Include the general Vercel wildcard for future deployments:
+    '.vercel.app',
+    # Include localhost/127.0.0.1 for local development (optional, but good practice)
+    '127.0.0.1',
+    'localhost',
+]
 
 
 INSTALLED_APPS = [
@@ -150,4 +162,5 @@ LOGOUT_REDIRECT_URL = '/'
 # Sendfile configuration (for development only)
 
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
 
