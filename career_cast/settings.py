@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [
 
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,6 +125,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_DIRS = [os.path.join(BASE_DIR / 'main_app/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # This is where `collectstatic` will collect files to.
 STATIC_ROOT = BASE_DIR / "staticfiles"
 # This is where Django will look for additional static files.
@@ -162,5 +165,6 @@ LOGOUT_REDIRECT_URL = '/'
 # Sendfile configuration (for development only)
 
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
 
 
