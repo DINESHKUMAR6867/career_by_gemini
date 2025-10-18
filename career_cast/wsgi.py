@@ -15,9 +15,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'career_cast.settings')
 
 application = get_wsgi_application()
 
-# handler = application
+handler = application
 if __name__ == "__main__":
     Vercel(application)
+
 
 
 
