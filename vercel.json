@@ -1,21 +1,31 @@
 {
+  "build": {
+    "env": {
+      "PIP_NO_BINARY": "sqlite3"
+    }
+  },
+  "systemPackages": ["sqlite", "sqlite-dev"],
   "builds": [
     {
       "src": "career_cast/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
-    },
-    {
-      "src": "build.sh",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "staticfiles" }
+      "config": { 
+        "maxLambdaSize": "15mb", 
+        "runtime": "python3.9" 
+      }
     }
+    // Remove the separate build for build.sh
   ],
   "routes": [
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
     },
-    { "src": "/(.*)", "dest": "career_cast/wsgi.py" }
-  ]
+    { 
+      "src": "/(.*)", 
+      "dest": "career_cast/wsgi.py" 
+    }
+  ],
+  // Add an install command to run your Django setup steps after dependencies are installed
+  "installCommand": "pip install -r requirements.txt && ./build.sh"
 }
