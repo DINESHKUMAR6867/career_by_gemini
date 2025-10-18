@@ -1,0 +1,12 @@
+# Vercel deployment ignore file
+
+# Ignore the local virtual environment
+dinesh/
+
+# Ignore common directories and files
+node_modules/
+.git/
+*.pyc
+db.sqlite3
+__pycache__/
+.env

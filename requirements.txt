@@ -1,5 +1,7 @@
 # --- Core Django ---
 Django==4.2.7
+gunicorn
+whitenoise
 asgiref==3.10.0
 sqlparse==0.5.3
 tzdata==2025.2
