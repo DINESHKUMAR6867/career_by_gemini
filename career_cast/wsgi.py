@@ -6,5 +6,5 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'career_cast.settings')
 
 application = get_wsgi_application()
 
-if __name__ == "__main__":
-    Vercel(application)  # For local testing with Vercel
+app = application
+
