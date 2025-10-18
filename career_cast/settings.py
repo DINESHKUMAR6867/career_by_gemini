@@ -10,8 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-development-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ["career-cast-eta.vercel.app", "localhost", "127.0.0.1", "*.vercel.app"]
-ALLOWED_HOSTS=[https://vercel.com/tunguturidineshkumar-6538s-projects/career-by-gemini/BYJAuebEMov7F69jnnEu8WBjeoZo]
+ALLOWED_HOSTS = "career-by-gemini.vercel.app"
 
 
 INSTALLED_APPS = [
@@ -151,3 +150,4 @@ LOGOUT_REDIRECT_URL = '/'
 # Sendfile configuration (for development only)
 
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
