@@ -3,10 +3,10 @@
 # Exit on error
 set -o errexit
 
-# Install Python
-apt-get update && apt-get install -y python3 python3-pip
+# Install SQLite3 dependencies
+apt-get update && apt-get install -y sqlite3 libsqlite3-dev
 
-# Install required Python packages
+# Install Python dependencies from requirements.txt
 python3 -m pip install -r requirements.txt
 
 # Run Django commands
