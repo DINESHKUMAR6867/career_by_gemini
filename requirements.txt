@@ -1,5 +1,5 @@
 # --- Core Django ---
-Django==4.2.3
+Django==4.2.7
 gunicorn
 whitenoise
 asgiref==3.10.0
@@ -21,4 +21,5 @@ lxml==6.0.2
 
 # --- OpenAI API ---
 openai==0.28.0
+
 
