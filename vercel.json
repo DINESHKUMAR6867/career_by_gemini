@@ -14,7 +14,6 @@
         "runtime": "python3.9" 
       }
     }
-    // Remove the separate build for build.sh
   ],
   "routes": [
     {
@@ -26,6 +25,5 @@
       "dest": "career_cast/wsgi.py" 
     }
   ],
-  // Add an install command to run your Django setup steps after dependencies are installed
   "installCommand": "pip install -r requirements.txt && ./build.sh"
 }
