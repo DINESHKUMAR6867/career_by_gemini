@@ -3,7 +3,12 @@
 # Exit on error
 set -o errexit
 
-python -m pip install -r requirements.txt
+# Install Python
+apt-get update && apt-get install -y python3 python3-pip
 
-python manage.py collectstatic --no-input
-python manage.py migrate
+# Install required Python packages
+python3 -m pip install -r requirements.txt
+
+# Run Django commands
+python3 manage.py collectstatic --no-input
+python3 manage.py migrate
