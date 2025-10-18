@@ -11,6 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-development-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ["career-cast-eta.vercel.app", "localhost", "127.0.0.1", "*.vercel.app"]
+ALLOWED_HOSTS=[https://vercel.com/tunguturidineshkumar-6538s-projects/career-by-gemini/BYJAuebEMov7F69jnnEu8WBjeoZo]
 
 
 INSTALLED_APPS = [
@@ -148,4 +149,5 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Sendfile configuration (for development only)
+
 SENDFILE_BACKEND = 'sendfile.backends.development'
