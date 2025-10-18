@@ -1,23 +1,13 @@
 {
-  "builds": [
-    {
-      "src": "career_cast/wsgi.py",
-      "use": "@vercel/python",
-      "config": { 
-        "maxLambdaSize": "15mb", 
-        "runtime": "python3.9" 
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "career_cast/wsgi.py" 
-    }
-  ],
-  "installCommand": "./build.sh"
+    "builds": [{
+        "src": "career_cast/wsgi.py",
+        "use": "@vercel/python",
+        "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
+    }],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "career_cast/wsgi.py"
+        }
+    ]
 }
