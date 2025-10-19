@@ -995,4 +995,13 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except ImportError as e:
         raise Exception(f"Required packages not installed: {e}. Install with: pip install python-docx")
     except Exception as e:
+
         raise Exception(f"Error processing DOCX: {str(e)}")
+
+
+from django.http import HttpResponse
+import django, pkg_resources
+
+def debug_view(request):
+    installed = [str(d) for d in pkg_resources.working_set]
+    return HttpResponse(f"Django version: {django.get_version()}<br>Packages: {installed[:10]}")
