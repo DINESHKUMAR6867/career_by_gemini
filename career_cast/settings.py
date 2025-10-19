@@ -63,7 +63,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
-# --- DATABASE CONFIGURATION (Supabase PostgreSQL) ---
+# ─── DATABASE (Supabase PostgreSQL + IPv4 + SSL) ──────────────
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -74,11 +74,15 @@ DATABASES = {
         "PASSWORD": "Dinesh@123",
         "OPTIONS": {
             "sslmode": "require",
-            "target_session_attrs": "read-write",
             "connect_timeout": 10,
+            "target_session_attrs": "read-write",
+            # 👇 force IPv4
+            "application_name": "career_by_gemini",
+            "options": "-c inet_family=4",
         },
     }
 }
+
 
 
 
@@ -130,6 +134,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
