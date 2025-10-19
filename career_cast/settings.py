@@ -66,20 +66,18 @@ WSGI_APPLICATION = "career_cast.wsgi.application"
 # ─── DATABASE (Supabase PostgreSQL + IPv4 + SSL) ──────────────
 import socket, os
 
+import dj_database_url
+import os
+
+# --- DATABASE CONFIGURATION ---
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",  # direct Supabase endpoint
-        "PORT": "5432",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "Dinesh@123",
-        "OPTIONS": {
-            "sslmode": "require",
-            "connect_timeout": 10,
-        },
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True,
+    )
 }
+
 
 
 # Force IPv4 connection (avoids “Network is unreachable”)
@@ -141,6 +139,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
