@@ -64,24 +64,29 @@ WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
 # ─── DATABASE (Supabase PostgreSQL + IPv4 + SSL) ──────────────
+import socket, os
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",
-        "PORT": "5432",
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "Dinesh@123",
+        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",
+        "PORT": "5432",
         "OPTIONS": {
             "sslmode": "require",
-            "connect_timeout": 10,
-            "target_session_attrs": "read-write",
-            # 👇 force IPv4
-            "application_name": "career_by_gemini",
-            "options": "-c inet_family=4",
+            "connect_timeout": 20,
         },
     }
 }
+
+# Force IPv4 connection (avoids “Network is unreachable”)
+try:
+    os.environ["PGHOSTADDR"] = socket.gethostbyname("db.wvfieqpcmzvvkoysckwv.supabase.co")
+except Exception as e:
+    print("Warning: Could not resolve IPv4 address:", e)
+
 
 
 
@@ -134,6 +139,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
