@@ -1,13 +1,24 @@
+# --- Django Core ---
 Django==5.1.1
-msal==1.34.0
 gunicorn
 whitenoise
 python-dotenv
+
+# --- HTTP & Auth ---
 requests
+msal==1.34.0
 PyJWT
+
+# --- Packaging (fixes pkg_resources missing) ---
+setuptools
+wheel
+
+# --- File Handling ---
 PyPDF2
 reportlab
 python-docx
 Pillow
 lxml
+
+# --- OpenAI / Gemini / AI ---
 openai
