@@ -1,28 +1,23 @@
 # --- Core Django ---
 Django>=4.2,<6.0
-django>=4.2,<6.0
 gunicorn
-whitenoise
-asgiref==3.10.0
-sqlparse==0.5.3
-tzdata==2025.2
-python-dotenv==1.0.0
+whitenoise>=6.6
+asgiref>=3.10.0
+sqlparse>=0.5.3
+tzdata>=2025.2
+python-dotenv>=1.0.0
 
 # --- HTTP & Authentication ---
-requests==2.32.5
-msal==1.34.0
-PyJWT==2.10.1
+requests>=2.32.0
+msal>=1.34.0
+PyJWT>=2.10.1
 
 # --- File Handling (PDF, DOCX, Images) ---
-PyPDF2==3.0.1
-reportlab==4.4.4
-python-docx==1.2.0
-Pillow==12.0.0
-lxml==6.0.2
+PyPDF2>=3.0.1
+reportlab>=4.4.4
+python-docx>=1.2.0
+Pillow>=12.0.0
+lxml>=6.0.0
 
-# --- OpenAI API ---
-openai==0.28.0
-
-
-
-
+# --- OpenAI / AI ---
+openai>=0.28.0
