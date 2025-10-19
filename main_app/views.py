@@ -9,7 +9,7 @@ from django.core.mail import send_mail
 from .models import CustomUser, CareerCast
 import json
 import random
-# to commit
+
 import os
 from datetime import datetime, timedelta
 import uuid
@@ -997,6 +997,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
