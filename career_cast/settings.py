@@ -69,17 +69,18 @@ import socket, os
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
+        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",  # direct Supabase endpoint
+        "PORT": "5432",
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "Dinesh@123",
-        "HOST": "db.wvfieqpcmzvvkoysckwv.pooler.supabase.co",  # ✅ Pooler endpoint
-        "PORT": "6543",
         "OPTIONS": {
             "sslmode": "require",
-            "connect_timeout": 20,
+            "connect_timeout": 10,
         },
     }
 }
+
 
 # Force IPv4 connection (avoids “Network is unreachable”)
 try:
@@ -140,6 +141,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
