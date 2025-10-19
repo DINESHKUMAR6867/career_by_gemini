@@ -1,14 +1,18 @@
-name: Run Django Migrations
+name: Django Migrations to Supabase
+
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,17 +23,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install psycopg2-binary
 
-      # ✅ Force IPv4 for Supabase connections
-      - name: Force IPv4 networking
-        run: |
-          sudo bash -c 'echo "precedence ::ffff:0:0/96 100" >> /etc/gai.conf'
-          cat /etc/gai.conf | grep precedence || true
-
-      - name: Run Django migrations
+      - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: career_cast.settings
+          DEBUG: "False"
+          DATABASE_URL: postgresql://postgres:Dinesh@123@db.wvfieqpcmzvvkoysckwv.supabase.co:5432/postgres
         run: |
           python manage.py makemigrations
-          python manage.py migrate
+          python manage.py migrate --noinput
