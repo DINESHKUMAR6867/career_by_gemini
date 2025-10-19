@@ -63,12 +63,18 @@ TEMPLATES = [
 WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
+# --- DATABASE CONFIGURATION (Supabase PostgreSQL) ---
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/tmp/db.sqlite3',  # writable temp dir in Vercel
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",
+        "PORT": "5432",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": "Dinesh@123",
     }
 }
+
 
 
 # ─── PASSWORD VALIDATION ─────────────────────────────────
@@ -117,4 +123,5 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
