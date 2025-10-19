@@ -87,6 +87,7 @@ try:
 except Exception as e:
     print("Warning: Could not resolve IPv4 address:", e)
 
+# to commit
 
 
 
@@ -139,6 +140,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
