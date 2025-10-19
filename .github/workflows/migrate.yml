@@ -1,0 +1,29 @@
+name: Run Django Migrations
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run migrations
+        env:
+          DB_HOST: db.wvfieqpcmzvvkoysckwv.supabase.co
+          DB_PORT: 5432
+          DB_NAME: postgres
+          DB_USER: postgres
+          DB_PASSWORD: Dinesh@123
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
