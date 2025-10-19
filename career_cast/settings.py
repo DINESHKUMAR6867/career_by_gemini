@@ -64,11 +64,12 @@ WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/tmp/db.sqlite3',  # writable temp dir in Vercel
     }
 }
+
 
 # ─── PASSWORD VALIDATION ─────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
@@ -116,3 +117,4 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
