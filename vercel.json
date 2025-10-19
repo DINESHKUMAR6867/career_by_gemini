@@ -8,5 +8,7 @@
   ],
   "installCommand": "pip install -r requirements.txt",
   "buildCommand": "python manage.py collectstatic --noinput || true",
-  "routes": [{ "src": "/(.*)", "dest": "career_cast/wsgi.py" }]
+  "routes": [
+    { "src": "/(.*)", "dest": "career_cast/wsgi.py" }
+  ]
 }
