@@ -2,8 +2,7 @@ name: Run Django Migrations
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   migrate:
@@ -22,13 +21,13 @@ jobs:
           pip install -r requirements.txt
           pip install psycopg2-binary
 
-      # 🔧 Force IPv4 for outgoing connections
-      - name: Force IPv4 Networking
+      # ✅ Force IPv4 for Supabase connections
+      - name: Force IPv4 networking
         run: |
-          sudo bash -c 'echo "precedence ::ffff:0:0/96  100" >> /etc/gai.conf'
+          sudo bash -c 'echo "precedence ::ffff:0:0/96 100" >> /etc/gai.conf'
           cat /etc/gai.conf | grep precedence || true
 
-      - name: Run Django Migrations
+      - name: Run Django migrations
         env:
           DJANGO_SETTINGS_MODULE: career_cast.settings
         run: |
