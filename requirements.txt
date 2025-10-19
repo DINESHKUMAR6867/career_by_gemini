@@ -3,6 +3,8 @@ Django==5.1.1
 gunicorn
 whitenoise
 python-dotenv
+psycopg2-binary
+
 
 # --- HTTP & Auth ---
 requests
@@ -22,3 +24,4 @@ lxml
 
 # --- OpenAI / Gemini / AI ---
 openai
+
