@@ -2,32 +2,35 @@ name: Run Django Migrations
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Force IPv4
         run: |
-          echo "FORCE IPv4"
-          sudo sed -i 's/::1/127.0.0.1/g' /etc/hosts
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install psycopg2-binary
 
-      - name: Run migrations
+      # 🔧 Force IPv4 for outgoing connections
+      - name: Force IPv4 Networking
+        run: |
+          sudo bash -c 'echo "precedence ::ffff:0:0/96  100" >> /etc/gai.conf'
+          cat /etc/gai.conf | grep precedence || true
+
+      - name: Run Django Migrations
         env:
-          DB_HOST: db.wvfieqpcmzvvkoysckwv.supabase.co
-          DB_PORT: 5432
-          DB_NAME: postgres
-          DB_USER: postgres
-          DB_PASSWORD: Dinesh@123
+          DJANGO_SETTINGS_MODULE: career_cast.settings
         run: |
           python manage.py makemigrations
           python manage.py migrate
