@@ -73,11 +73,13 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "Dinesh@123",
         "OPTIONS": {
-            "sslmode": "require",          # Supabase needs SSL
-            "connect_timeout": 10,         # avoid hanging
+            "sslmode": "require",
+            "target_session_attrs": "read-write",
+            "connect_timeout": 10,
         },
     }
 }
+
 
 
 
@@ -128,6 +130,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
