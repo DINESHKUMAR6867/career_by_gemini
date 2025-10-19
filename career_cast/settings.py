@@ -72,8 +72,8 @@ DATABASES = {
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "Dinesh@123",
-        "HOST": "db.wvfieqpcmzvvkoysckwv.supabase.co",
-        "PORT": "5432",
+        "HOST": "db.wvfieqpcmzvvkoysckwv.pooler.supabase.co",  # ✅ Pooler endpoint
+        "PORT": "6543",
         "OPTIONS": {
             "sslmode": "require",
             "connect_timeout": 20,
@@ -140,6 +140,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
