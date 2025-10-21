@@ -258,6 +258,7 @@ WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
 # NEON POSTGRESQL CONFIGURATION
+# ─── DATABASE ────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -268,9 +269,8 @@ DATABASES = {
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
-            'connect_timeout': 10,
         },
-        'CONN_MAX_AGE': 0,  # Important for serverless
+        'CONN_MAX_AGE': 0,
     }
 }
 
@@ -324,6 +324,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
