@@ -80,17 +80,15 @@ import dj_database_url
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+        'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',  # NeonDB host
         'NAME': 'neondb',
         'USER': 'neondb_owner',
         'PASSWORD': 'npg_twcB6gjO3Dmv',
-        'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
         'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
-        'CONN_MAX_AGE': 0,
+        'OPTIONS': {'sslmode': 'require'},
     }
 }
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -329,6 +327,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
