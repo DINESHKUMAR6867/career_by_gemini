@@ -8,16 +8,16 @@
       }
     }
   ],
-  "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "python manage.py collectstatic --noinput",
+  "installCommand": "chmod +x build.sh && ./build.sh",
   "routes": [
-    {
-      "src": "/run-migrations",
-      "dest": "api/migrate.py"
-    },
     {
       "src": "/(.*)",
       "dest": "career_cast/wsgi.py"
     }
-  ]
+  ],
+  "functions": {
+    "career_cast/wsgi.py": {
+      "maxDuration": 30
+    }
+  }
 }
