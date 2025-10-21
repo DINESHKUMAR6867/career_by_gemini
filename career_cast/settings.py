@@ -75,39 +75,39 @@ import dj_database_url
 import os
 import dj_database_url
 
-# DATABASES = {
-#     "default": dj_database_url.config(
-#         default=os.getenv("POSTGRES_URL"),
-#         conn_max_age=600,
-#         ssl_require=True,  # Railway supports SSL
-#     )
-# }
-
-import os
-from pathlib import Path
-import shutil
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Writable copy in /tmp
-TMP_DB = Path("/tmp/db.sqlite3")
-
-# Path to bundled (read-only) copy in repo
-REPO_DB = BASE_DIR / "db.sqlite3"
-
-# On cold start, copy bundled DB to writable /tmp
-try:
-    if REPO_DB.exists() and not TMP_DB.exists():
-        shutil.copy(REPO_DB, TMP_DB)
-except Exception as e:
-    print("Failed to copy DB template:", e)
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(TMP_DB),
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("POSTGRES_URL"),
+        conn_max_age=600,
+        ssl_require=True,  # Railway supports SSL
+    )
 }
+
+# import os
+# from pathlib import Path
+# import shutil
+
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
+# # Writable copy in /tmp
+# TMP_DB = Path("/tmp/db.sqlite3")
+
+# # Path to bundled (read-only) copy in repo
+# REPO_DB = BASE_DIR / "db.sqlite3"
+
+# # On cold start, copy bundled DB to writable /tmp
+# try:
+#     if REPO_DB.exists() and not TMP_DB.exists():
+#         shutil.copy(REPO_DB, TMP_DB)
+# except Exception as e:
+#     print("Failed to copy DB template:", e)
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": str(TMP_DB),
+#     }
+# }
 
 
 
@@ -174,6 +174,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
