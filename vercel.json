@@ -9,8 +9,15 @@
     }
   ],
   "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "python manage.py collectstatic --noinput && python manage.py migrate --noinput",
+  "buildCommand": "python manage.py collectstatic --noinput",
   "routes": [
-    { "src": "/(.*)", "dest": "career_cast/wsgi.py" }
+    { 
+      "src": "/run-migrations",
+      "dest": "api/migrate.py"
+    },
+    { 
+      "src": "/(.*)", 
+      "dest": "career_cast/wsgi.py" 
+    }
   ]
 }
