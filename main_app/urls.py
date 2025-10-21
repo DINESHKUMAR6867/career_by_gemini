@@ -5,31 +5,38 @@ from . import views
 
 urlpatterns = [
     path('', views.landing_page, name='landing'),
+
+    # Auth and OTP
     path('auth/', views.auth_page, name='auth'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
+
+    # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('verify-otp/dashboard/', views.dashboard, name='dashboard'),
-    path('/auth/?next=/dashboard/', views.dashboard, name='dashboard'),
+
+    # Career Cast creation steps
     path('create-cast/step1/', views.create_cast_step1, name='create_cast_step1'),
     path('create-cast/step2/', views.create_cast_step2, name='create_cast_step2'),
     path('create-cast/step3/', views.create_cast_step3, name='create_cast_step3'),
+
+    # Recording and uploads
     path('record/', views.record_view, name='record'),
     path('video/upload/', views.video_upload, name='video_upload'),
-    
-    # Use UUID patterns for all cast_id URLs
-    path('final-result/<int:cast_id>/', views.final_result, name='final_result'),  # For integer cast_id
+
+    # Cast results and resume
+    path('final-result/<int:cast_id>/', views.final_result, name='final_result'),
     path('download-resume/<uuid:cast_id>/', views.download_resume, name='download_resume'),
     path('view-video/<uuid:cast_id>/', views.view_video, name='view_video'),
     path('career-cast/<int:cast_id>/rewrite-teleprompter/', views.rewrite_teleprompter, name='rewrite_teleprompter'),
-    
-    # path('rewrite-teleprompter/', views.rewrite_teleprompter, name='rewrite_teleprompter'),
+
+    # Other actions
     path('logout/', views.logout_view, name='logout'),
- path('download_enhanced_resume/<int:cast_id>/', views.download_enhanced_resume, name='download_enhanced_resume'),
- ]
+    path('download_enhanced_resume/<int:cast_id>/', views.download_enhanced_resume, name='download_enhanced_resume'),
+]
 
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 
 # from django.urls import path
@@ -72,3 +79,4 @@ if settings.DEBUG:
 #     # Rewrite the teleprompter script
 #     path('rewrite-teleprompter/', views.rewrite_teleprompter, name='rewrite_teleprompter'),
 # ]
+
