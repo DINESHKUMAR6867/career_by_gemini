@@ -39,5 +39,6 @@ except Exception as e:
     print(f"Migration error (may be normal if already run): {e}")
 
 # Get the WSGI application
-application = get_wsgi_application()
+app = get_wsgi_application()
+
 
