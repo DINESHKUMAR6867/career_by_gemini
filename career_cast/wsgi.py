@@ -16,29 +16,19 @@ import os
 import sys
 from django.core.wsgi import get_wsgi_application
 
-# Add the project directory to the Python path
+# Add project directory to Python path
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_dir)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'career_cast.settings')
 
-# Import Django after setting the environment
-import django
-from django.core.management import execute_from_command_line
-
-# Configure Django
-django.setup()
-
-# Run migrations automatically
+# Try to run migrations on startup (silent fail if already run)
 try:
-    print("Attempting to run migrations...")
+    import django
+    django.setup()
     from django.core.management import execute_from_command_line
     execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-    print("Migrations completed successfully!")
-except Exception as e:
-    print(f"Migration error (may be normal if already run): {e}")
+except:
+    pass  # Migrations may have already run
 
-# Get the WSGI application
 app = get_wsgi_application()
-
-
