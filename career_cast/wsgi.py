@@ -11,7 +11,6 @@
 #     call_command("migrate", interactive=False, verbosity=0)
 # except Exception as e:
 #     print("Migrations skipped:", e)
-
 import os
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -22,13 +21,32 @@ sys.path.append(project_dir)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'career_cast.settings')
 
-# Try to run migrations on startup (silent fail if already run)
+# Force run migrations on every cold start
 try:
     import django
     django.setup()
+    
+    from django.db import connection
     from django.core.management import execute_from_command_line
-    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-except:
-    pass  # Migrations may have already run
+    
+    # Check if django_migrations table exists
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'django_migrations'
+            );
+        """)
+        table_exists = cursor.fetchone()[0]
+        
+        if not table_exists:
+            print("Running initial migrations...")
+            execute_from_command_line(['manage.py', 'migrate', '--noinput'])
+        else:
+            print("Migrations table exists, skipping auto-migration")
+            
+except Exception as e:
+    print(f"Migration check completed: {e}")
 
 app = get_wsgi_application()
+
