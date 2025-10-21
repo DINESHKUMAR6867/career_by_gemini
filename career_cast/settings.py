@@ -75,12 +75,19 @@ import dj_database_url
 import os
 import dj_database_url
 
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         default=os.getenv("POSTGRES_URL"),
+#         conn_max_age=600,
+#         ssl_require=True,  # Railway supports SSL
+#     )
+# }
+
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("POSTGRES_URL"),
-        conn_max_age=600,
-        ssl_require=True,  # Railway supports SSL
-    )
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
 
@@ -146,6 +153,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
