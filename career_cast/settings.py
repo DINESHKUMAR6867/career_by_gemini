@@ -76,6 +76,7 @@ import os
 import dj_database_url
 
 # ─── DATABASE ────────────────────────────────────────────
+# ─── DATABASE ────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -87,6 +88,7 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': 'require',
         },
+        'CONN_MAX_AGE': 0,
     }
 }
 # DATABASES = {
@@ -327,6 +329,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
