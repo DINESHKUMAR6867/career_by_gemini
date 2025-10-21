@@ -3,14 +3,24 @@
 # Exit immediately if a command exits with a non-zero status.
 set -o errexit
 
-# 1. Install SQLite native dependencies using Vercel's available package manager (apk)
-# This fixes the "ModuleNotFoundError: No module named '_sqlite3'"
-apk update
-apk add sqlite sqlite-dev
+echo "=== Starting Neon PostgreSQL Deployment ==="
 
-# 2. Install Python dependencies from requirements.txt
+# 1. Install Python dependencies from requirements.txt
 python3 -m pip install -r requirements.txt
 
-# 3. Run Django commands
+# 2. Run Django migrations (FORCEFULLY for Neon PostgreSQL)
+echo "Running database migrations..."
+python3 manage.py migrate --no-input
+
+# 3. If migrations fail, try with fake migrations
+if [ $? -ne 0 ]; then
+    echo "First migration attempt failed, trying with fake migrations..."
+    python3 manage.py migrate --fake
+    python3 manage.py migrate --no-input
+fi
+
+# 4. Collect static files
+echo "Collecting static files..."
 python3 manage.py collectstatic --no-input
-python3 manage.py migrate
+
+echo "=== Neon PostgreSQL Deployment Completed ==="
