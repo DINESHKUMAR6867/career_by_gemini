@@ -89,9 +89,8 @@ import dj_database_url
 # }
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:Dinesh%40123@db.wdklgycbyzrefhutkydw.supabase.co:5432/postgres',
+        default='postgresql://postgres:Dinesh%40123@aws-0-us-west-1.pooler.supabase.com:6543/postgres',
         conn_max_age=60,
-        conn_health_checks=True,
         ssl_require=True
     )
 }
@@ -187,6 +186,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
