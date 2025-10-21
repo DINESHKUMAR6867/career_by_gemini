@@ -87,13 +87,19 @@ import dj_database_url
 #         },
 #     }
 # }
-DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://postgres:Dinesh%40123@aws-0-us-west-1.pooler.supabase.com:6543/postgres',
-        conn_max_age=60,
-        ssl_require=True
-    )
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'neondb',
+#         'USER': 'neondb_owner',
+#         'PASSWORD': 'npg_twcB6gjO3Dmv',
+#         'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         },
+#     }
+# }
 
 # import os
 # from pathlib import Path
@@ -186,6 +192,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
