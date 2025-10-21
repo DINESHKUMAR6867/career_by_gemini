@@ -239,52 +239,116 @@ from django.contrib import messages
 from django.contrib.auth import login
 from .models import CustomUser
 
-def verify_otp(request):
-    """Verify OTP entered by the user during signup"""
-    if request.user.is_authenticated:
-        return redirect('dashboard')  # If already authenticated, redirect to dashboard
+# def verify_otp(request):
+#     """Verify OTP entered by the user during signup"""
+#     if request.user.is_authenticated:
+#         return redirect('dashboard')  # If already authenticated, redirect to dashboard
 
-    email = request.session.get('email_for_verification')
-    if not email:
-        return redirect('auth')  # Redirect back if no email in session
+#     email = request.session.get('email_for_verification')
+#     if not email:
+#         return redirect('auth')  # Redirect back if no email in session
 
-    if request.method == 'POST':
-        otp_entered = request.POST.get('otp')
-        if otp_entered:
-            try:
-                user = CustomUser.objects.get(email=email)
+#     if request.method == 'POST':
+#         otp_entered = request.POST.get('otp')
+#         if otp_entered:
+#             try:
+#                 user = CustomUser.objects.get(email=email)
                 
-                # Check OTP validity (10 min expiry)
-                if (user.otp == otp_entered and 
-                    user.otp_created_at and 
-                    timezone.now() <= user.otp_created_at + timedelta(minutes=10)):
+#                 # Check OTP validity (10 min expiry)
+#                 if (user.otp == otp_entered and 
+#                     user.otp_created_at and 
+#                     timezone.now() <= user.otp_created_at + timedelta(minutes=10)):
                     
-                    user.otp = None
-                    user.otp_created_at = None
-                    user.is_verified = True
-                    user.save()
+#                     user.otp = None
+#                     user.otp_created_at = None
+#                     user.is_verified = True
+#                     user.save()
                     
-                    # Log user in
-                    login(request, user, backend='main_app.backends.EmailBackend')
-                    messages.success(request, 'Successfully verified! Welcome to CareerCast.')
+#                     # Log user in
+#                     login(request, user, backend='main_app.backends.EmailBackend')
+#                     messages.success(request, 'Successfully verified! Welcome to CareerCast.')
 
-                    # ✅ Redirect properly
-                    next_url = request.GET.get('next')
-                    if next_url:
-                        return HttpResponseRedirect(next_url)
-                    else:
-                        return redirect('dashboard')
+#                     # ✅ Redirect properly
+#                     next_url = request.GET.get('next')
+#                     if next_url:
+#                         return HttpResponseRedirect(next_url)
+#                     else:
+#                         return redirect('dashboard')
 
-                else:
-                    messages.error(request, 'Invalid or expired OTP. Please try again.')
+#                 else:
+#                     messages.error(request, 'Invalid or expired OTP. Please try again.')
 
-            except CustomUser.DoesNotExist:
-                messages.error(request, 'User not found. Please register again.')
-                return redirect('auth')
-        else:
-            messages.error(request, 'Please enter the OTP.')
+#             except CustomUser.DoesNotExist:
+#                 messages.error(request, 'User not found. Please register again.')
+#                 return redirect('auth')
+#         else:
+#             messages.error(request, 'Please enter the OTP.')
 
-    return render(request, 'main_app/verify_otp.html', {'email': email})
+#     return render(request, 'main_app/verify_otp.html', {'email': email})
+
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.contrib import messages
+from django.contrib.auth import login
+from django.http import HttpResponseRedirect
+from datetime import timedelta
+from .models import CustomUser
+
+def verify_otp(request):
+    """Verify OTP entered by the user during signup."""
+    
+    # Step 1: Redirect if already authenticated
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    # Step 2: Get email from session safely
+    email = request.session.get("email_for_verification")
+    if not email:
+        messages.error(request, "Session expired. Please login again.")
+        return redirect("auth")
+
+    # Step 3: Handle OTP submission
+    if request.method == "POST":
+        otp_entered = request.POST.get("otp")
+
+        if not otp_entered:
+            messages.error(request, "Please enter the OTP.")
+            return render(request, "main_app/verify_otp.html", {"email": email})
+
+        try:
+            user = CustomUser.objects.get(email=email)
+
+            # Step 4: Validate OTP expiry
+            if (
+                user.otp == otp_entered
+                and user.otp_created_at
+                and timezone.now() <= user.otp_created_at + timedelta(minutes=10)
+            ):
+                user.otp = None
+                user.otp_created_at = None
+                user.is_verified = True
+                user.save()
+
+                # Step 5: Log the user in
+                login(request, user, backend="main_app.backends.EmailBackend")
+                messages.success(request, "Successfully verified! Welcome to CareerCast.")
+
+                # Step 6: Safe redirect (no double encoding)
+                next_url = request.GET.get("next")
+                if next_url and next_url.startswith("/"):
+                    return redirect(next_url)  # ✅ avoids %252F encoding
+                return redirect("dashboard")
+
+            else:
+                messages.error(request, "Invalid or expired OTP. Please try again.")
+
+        except CustomUser.DoesNotExist:
+            messages.error(request, "User not found. Please register again.")
+            return redirect("auth")
+
+    # Step 7: Render OTP page
+    return render(request, "main_app/verify_otp.html", {"email": email})
+
 
 
 
@@ -997,6 +1061,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
