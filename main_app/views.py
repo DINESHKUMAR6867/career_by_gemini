@@ -290,24 +290,20 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import login
-from django.http import HttpResponseRedirect
 from datetime import timedelta
 from .models import CustomUser
 
 def verify_otp(request):
-    """Verify OTP entered by the user during signup."""
-    
-    # Step 1: Redirect if already authenticated
+    """Simplified version — always redirects to dashboard after verification"""
+
     if request.user.is_authenticated:
         return redirect("dashboard")
 
-    # Step 2: Get email from session safely
     email = request.session.get("email_for_verification")
     if not email:
         messages.error(request, "Session expired. Please login again.")
         return redirect("auth")
 
-    # Step 3: Handle OTP submission
     if request.method == "POST":
         otp_entered = request.POST.get("otp")
 
@@ -318,7 +314,7 @@ def verify_otp(request):
         try:
             user = CustomUser.objects.get(email=email)
 
-            # Step 4: Validate OTP expiry
+            # Validate OTP (10 min expiry)
             if (
                 user.otp == otp_entered
                 and user.otp_created_at
@@ -329,14 +325,10 @@ def verify_otp(request):
                 user.is_verified = True
                 user.save()
 
-                # Step 5: Log the user in
                 login(request, user, backend="main_app.backends.EmailBackend")
-                messages.success(request, "Successfully verified! Welcome to CareerCast.")
-
-                # Step 6: Safe redirect (no double encoding)
-                next_url = request.GET.get("next")
-                if next_url and next_url.startswith("/"):
-                    return redirect(next_url)  # ✅ avoids %252F encoding
+                messages.success(request, "OTP verified! Redirecting to dashboard...")
+                
+                # ✅ Always go directly to dashboard
                 return redirect("dashboard")
 
             else:
@@ -346,8 +338,8 @@ def verify_otp(request):
             messages.error(request, "User not found. Please register again.")
             return redirect("auth")
 
-    # Step 7: Render OTP page
     return render(request, "main_app/verify_otp.html", {"email": email})
+
 
 
 
@@ -1061,6 +1053,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
