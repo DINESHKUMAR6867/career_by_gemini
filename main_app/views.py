@@ -285,23 +285,14 @@ from .models import CustomUser
 #             messages.error(request, 'Please enter the OTP.')
 
 #     return render(request, 'main_app/verify_otp.html', {'email': email})
-
-from django.shortcuts import render, redirect
-from django.utils import timezone
-from django.contrib import messages
-from django.contrib.auth import login
-from datetime import timedelta
-from .models import CustomUser
-
 def verify_otp(request):
-    """Simplified version — always redirects to dashboard after verification"""
-
+    """Verify OTP and always redirect safely"""
     if request.user.is_authenticated:
         return redirect("dashboard")
 
     email = request.session.get("email_for_verification")
     if not email:
-        messages.error(request, "Session expired. Please login again.")
+        messages.error(request, "Session expired. Please log in again.")
         return redirect("auth")
 
     if request.method == "POST":
@@ -314,7 +305,6 @@ def verify_otp(request):
         try:
             user = CustomUser.objects.get(email=email)
 
-            # Validate OTP (10 min expiry)
             if (
                 user.otp == otp_entered
                 and user.otp_created_at
@@ -326,19 +316,18 @@ def verify_otp(request):
                 user.save()
 
                 login(request, user, backend="main_app.backends.EmailBackend")
-                messages.success(request, "OTP verified! Redirecting to dashboard...")
+                messages.success(request, "OTP verified successfully!")
                 
-                # ✅ Always go directly to dashboard
+                # 🚀 Always go directly to dashboard — no query params
                 return redirect("dashboard")
 
-            else:
-                messages.error(request, "Invalid or expired OTP. Please try again.")
-
+            messages.error(request, "Invalid or expired OTP. Please try again.")
         except CustomUser.DoesNotExist:
             messages.error(request, "User not found. Please register again.")
             return redirect("auth")
 
     return render(request, "main_app/verify_otp.html", {"email": email})
+
 
 
 
@@ -1053,6 +1042,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
