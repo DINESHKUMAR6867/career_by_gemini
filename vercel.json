@@ -1,19 +1,20 @@
 {
   "builds": [
     {
-      "src": "career_cast/wsgi.py",
+      "src": "your_project_name/wsgi.py",
       "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.12"
-      }
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
     }
   ],
-  "installCommand": "chmod +x build.sh && ./build.sh",
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "career_cast/wsgi.py"
+      "dest": "your_project_name/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "DATABASE_URL": "@postgresql://neondb_owner:npg_twcB6gjO3Dmv@ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require",
+    // Other environment variables for your Django project
+  },
+  "buildCommand": "pip install -r requirements.txt && python manage.py migrate"
 }
-
