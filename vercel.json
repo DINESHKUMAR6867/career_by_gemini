@@ -8,8 +8,7 @@
       }
     }
   ],
-  "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "python manage.py collectstatic --noinput && python reset_migrations.py",
+  "installCommand": "chmod +x build.sh && ./build.sh",
   "routes": [
     {
       "src": "/(.*)",
