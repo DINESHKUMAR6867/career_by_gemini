@@ -74,6 +74,21 @@ import dj_database_url
 
 import os
 import dj_database_url
+
+# ─── DATABASE ────────────────────────────────────────────
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'neondb',
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_twcB6gjO3Dmv',
+        'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    }
+}
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -134,10 +149,10 @@ import dj_database_url
 
 
 # Force IPv4 connection (avoids “Network is unreachable”)
-try:
-    os.environ["PGHOSTADDR"] = socket.gethostbyname("db.wvfieqpcmzvvkoysckwv.supabase.co")
-except Exception as e:
-    print("Warning: Could not resolve IPv4 address:", e)
+# try:
+#     os.environ["PGHOSTADDR"] = socket.gethostbyname("db.wvfieqpcmzvvkoysckwv.supabase.co")
+# except Exception as e:
+#     print("Warning: Could not resolve IPv4 address:", e)
 
 # try to commit
 
@@ -192,6 +207,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
