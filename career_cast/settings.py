@@ -1,3 +1,196 @@
+# import os
+# from pathlib import Path
+# from dotenv import load_dotenv
+
+# # Load environment variables
+# load_dotenv()
+
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
+# # ─── SECURITY ─────────────────────────────────────────────
+# SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-development-key")
+# DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+# ALLOWED_HOSTS = [
+#     ".vercel.app",
+#     "127.0.0.1",
+#     "localhost",
+# ]
+
+# # ─── APPS ────────────────────────────────────────────────
+# INSTALLED_APPS = [
+#     "whitenoise.runserver_nostatic",
+#     "django.contrib.admin",
+#     "django.contrib.auth",
+#     "django.contrib.contenttypes",
+#     "django.contrib.sessions",
+#     "django.contrib.messages",
+#     "django.contrib.staticfiles",
+#     "main_app",
+# ]
+
+# # ─── MIDDLEWARE ──────────────────────────────────────────
+# MIDDLEWARE = [
+#     "django.middleware.security.SecurityMiddleware",
+#     "whitenoise.middleware.WhiteNoiseMiddleware",
+#     "django.contrib.sessions.middleware.SessionMiddleware",
+#     "django.middleware.common.CommonMiddleware",
+#     "django.middleware.csrf.CsrfViewMiddleware",
+#     "django.contrib.auth.middleware.AuthenticationMiddleware",
+#     "django.contrib.messages.middleware.MessageMiddleware",
+#     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+# ]
+
+# ROOT_URLCONF = "career_cast.urls"
+
+# # ─── TEMPLATES ───────────────────────────────────────────
+# TEMPLATES = [
+#     {
+#         "BACKEND": "django.template.backends.django.DjangoTemplates",
+#         "DIRS": [BASE_DIR / "templates"],
+#         "APP_DIRS": True,
+#         "OPTIONS": {
+#             "context_processors": [
+#                 "django.template.context_processors.debug",
+#                 "django.template.context_processors.request",
+#                 "django.contrib.auth.context_processors.auth",
+#                 "django.contrib.messages.context_processors.messages",
+#             ],
+#         },
+#     },
+# ]
+
+# WSGI_APPLICATION = "career_cast.wsgi.application"
+
+# # ─── DATABASE ────────────────────────────────────────────
+# # ─── DATABASE (Supabase PostgreSQL + IPv4 + SSL) ──────────────
+# import socket, os
+
+# import dj_database_url
+# import os
+
+# import os
+# import dj_database_url
+
+# import os
+# import dj_database_url
+
+# # ─── DATABASE ────────────────────────────────────────────
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'neondb',
+#         'USER': 'neondb_owner',
+#         'PASSWORD': 'npg_twcB6gjO3Dmv',
+#         'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         },
+#     }
+# }
+# # DATABASES = {
+# #     'default': {
+# #         'ENGINE': 'django.db.backends.postgresql',
+# #         'NAME': 'postgres',
+# #         'USER': 'postgres',
+# #         'PASSWORD': 'Dinesh@123',  # Keep as is in direct config
+# #         'HOST': 'db.wdklgycbyzrefhutkydw.supabase.co',
+# #         'PORT': '5432',
+# #         'OPTIONS': {
+# #             'sslmode': 'require',  # Crucial for Supabase
+# #         },
+# #     }
+# # }
+# # DATABASES = {
+# #     'default': {
+# #         'ENGINE': 'django.db.backends.postgresql',
+# #         'NAME': 'neondb',
+# #         'USER': 'neondb_owner',
+# #         'PASSWORD': 'npg_twcB6gjO3Dmv',
+# #         'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
+# #         'PORT': '5432',
+# #         'OPTIONS': {
+# #             'sslmode': 'require',
+# #         },
+# #     }
+# # }
+
+# # import os
+# # from pathlib import Path
+# # import shutil
+
+# # BASE_DIR = Path(__file__).resolve().parent.parent
+
+# # # Writable copy in /tmp
+# # TMP_DB = Path("/tmp/db.sqlite3")
+
+# # # Path to bundled (read-only) copy in repo
+# # REPO_DB = BASE_DIR / "db.sqlite3"
+
+# # # On cold start, copy bundled DB to writable /tmp
+# # try:
+# #     if REPO_DB.exists() and not TMP_DB.exists():
+# #         shutil.copy(REPO_DB, TMP_DB)
+# # except Exception as e:
+# #     print("Failed to copy DB template:", e)
+
+# # DATABASES = {
+# #     "default": {
+# #         "ENGINE": "django.db.backends.sqlite3",
+# #         "NAME": str(TMP_DB),
+# #     }
+# # }
+
+
+
+
+
+
+
+# # Force IPv4 connection (avoids “Network is unreachable”)
+# # try:
+# #     os.environ["PGHOSTADDR"] = socket.gethostbyname("db.wvfieqpcmzvvkoysckwv.supabase.co")
+# # except Exception as e:
+# #     print("Warning: Could not resolve IPv4 address:", e)
+
+# # try to commit
+
+
+
+
+
+
+# # ─── PASSWORD VALIDATION ─────────────────────────────────
+# AUTH_PASSWORD_VALIDATORS = [
+#     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+#     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+#     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+#     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+# ]
+
+# # ─── INTERNATIONALIZATION ────────────────────────────────
+# LANGUAGE_CODE = "en-us"
+# TIME_ZONE = "UTC"
+# USE_I18N = True
+# USE_TZ = True
+
+# # ─── STATIC & MEDIA ──────────────────────────────────────
+# STATIC_URL = "/static/"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = BASE_DIR / "media"
+
+# # ─── AUTHENTICATION ──────────────────────────────────────
+# AUTH_USER_MODEL = "main_app.CustomUser"
+# AUTHENTICATION_BACKENDS = [
+#     "django.contrib.auth.backends.ModelBackend",
+#     "main_app.backends.EmailBackend",
+# ]
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -9,17 +202,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ─── SECURITY ─────────────────────────────────────────────
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-development-key")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = False  # Always False for production
 
 ALLOWED_HOSTS = [
     ".vercel.app",
-    "127.0.0.1",
+    "127.0.0.1", 
     "localhost",
+    "career-by-gemini.vercel.app",
+    "*.vercel.app"
 ]
 
 # ─── APPS ────────────────────────────────────────────────
 INSTALLED_APPS = [
-    "whitenoise.runserver_nostatic",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,7 +241,7 @@ ROOT_URLCONF = "career_cast.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -63,19 +257,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "career_cast.wsgi.application"
 
 # ─── DATABASE ────────────────────────────────────────────
-# ─── DATABASE (Supabase PostgreSQL + IPv4 + SSL) ──────────────
-import socket, os
-
-import dj_database_url
-import os
-
-import os
-import dj_database_url
-
-import os
-import dj_database_url
-
-# ─── DATABASE ────────────────────────────────────────────
+# NEON POSTGRESQL CONFIGURATION
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -86,80 +268,11 @@ DATABASES = {
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
+            'connect_timeout': 10,
         },
+        'CONN_MAX_AGE': 0,  # Important for serverless
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': 'Dinesh@123',  # Keep as is in direct config
-#         'HOST': 'db.wdklgycbyzrefhutkydw.supabase.co',
-#         'PORT': '5432',
-#         'OPTIONS': {
-#             'sslmode': 'require',  # Crucial for Supabase
-#         },
-#     }
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'neondb',
-#         'USER': 'neondb_owner',
-#         'PASSWORD': 'npg_twcB6gjO3Dmv',
-#         'HOST': 'ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech',
-#         'PORT': '5432',
-#         'OPTIONS': {
-#             'sslmode': 'require',
-#         },
-#     }
-# }
-
-# import os
-# from pathlib import Path
-# import shutil
-
-# BASE_DIR = Path(__file__).resolve().parent.parent
-
-# # Writable copy in /tmp
-# TMP_DB = Path("/tmp/db.sqlite3")
-
-# # Path to bundled (read-only) copy in repo
-# REPO_DB = BASE_DIR / "db.sqlite3"
-
-# # On cold start, copy bundled DB to writable /tmp
-# try:
-#     if REPO_DB.exists() and not TMP_DB.exists():
-#         shutil.copy(REPO_DB, TMP_DB)
-# except Exception as e:
-#     print("Failed to copy DB template:", e)
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": str(TMP_DB),
-#     }
-# }
-
-
-
-
-
-
-
-# Force IPv4 connection (avoids “Network is unreachable”)
-# try:
-#     os.environ["PGHOSTADDR"] = socket.gethostbyname("db.wvfieqpcmzvvkoysckwv.supabase.co")
-# except Exception as e:
-#     print("Warning: Could not resolve IPv4 address:", e)
-
-# try to commit
-
-
-
-
-
 
 # ─── PASSWORD VALIDATION ─────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
@@ -175,14 +288,10 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ─── STATIC & MEDIA ──────────────────────────────────────
+# ─── STATIC FILES ────────────────────────────────────────
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 # ─── AUTHENTICATION ──────────────────────────────────────
 AUTH_USER_MODEL = "main_app.CustomUser"
@@ -190,6 +299,14 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "main_app.backends.EmailBackend",
 ]
+LOGIN_URL = "/auth/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ─── EXTERNAL API KEYS ───────────────────────────────────
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 LOGIN_URL = "/auth/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
@@ -207,6 +324,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
