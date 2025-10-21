@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "main_app",
 ]
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Ensure this is set
+
 
 # ─── MIDDLEWARE ──────────────────────────────────────────
 MIDDLEWARE = [
@@ -327,6 +329,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
