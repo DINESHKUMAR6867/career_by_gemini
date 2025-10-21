@@ -13,10 +13,11 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "@postgresql://neondb_owner:npg_twcB6gjO3Dmv@ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require",
+    "DATABASE_URL": "postgresql://neondb_owner:npg_twcB6gjO3Dmv@ep-holy-base-ad624cg0-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require",
   },
   "buildCommand": "pip install -r requirements.txt && python manage.py migrate"
 }
+
 
 
 
