@@ -13,15 +13,31 @@
 #     print("Migrations skipped:", e)
 
 import os
+import sys
 from django.core.wsgi import get_wsgi_application
-from django.core.management import execute_from_command_line
+
+# Add the project directory to the Python path
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_dir)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'career_cast.settings')
 
-# Try to run migrations on startup
-try:
-    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-except:
-    pass  # Ignore errors if tables already exist
+# Import Django after setting the environment
+import django
+from django.core.management import execute_from_command_line
 
-app = get_wsgi_application()
+# Configure Django
+django.setup()
+
+# Run migrations automatically
+try:
+    print("Attempting to run migrations...")
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
+    print("Migrations completed successfully!")
+except Exception as e:
+    print(f"Migration error (may be normal if already run): {e}")
+
+# Get the WSGI application
+application = get_wsgi_application()
+
