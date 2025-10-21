@@ -74,18 +74,26 @@ import dj_database_url
 
 import os
 import dj_database_url
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Dinesh@123',  # Keep as is in direct config
+#         'HOST': 'db.wdklgycbyzrefhutkydw.supabase.co',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'sslmode': 'require',  # Crucial for Supabase
+#         },
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'Dinesh@123',  # Keep as is in direct config
-        'HOST': 'db.wdklgycbyzrefhutkydw.supabase.co',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',  # Crucial for Supabase
-        },
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:Dinesh%40123@db.wdklgycbyzrefhutkydw.supabase.co:5432/postgres',
+        conn_max_age=60,
+        conn_health_checks=True,
+        ssl_require=True
+    )
 }
 
 # import os
@@ -179,6 +187,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
