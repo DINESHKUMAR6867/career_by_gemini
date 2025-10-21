@@ -8,16 +8,12 @@
       }
     }
   ],
-  "installCommand": "chmod +x build.sh && ./build.sh",
+  "installCommand": "pip install -r requirements.txt",
+  "buildCommand": "python manage.py collectstatic --noinput && python manage.py migrate --noinput",
   "routes": [
     {
       "src": "/(.*)",
       "dest": "career_cast/wsgi.py"
     }
-  ],
-  "functions": {
-    "career_cast/wsgi.py": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
