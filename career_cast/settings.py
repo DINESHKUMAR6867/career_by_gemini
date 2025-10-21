@@ -85,19 +85,30 @@ import dj_database_url
 
 import os
 from pathlib import Path
+import shutil
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ✅ Always point to a fixed file inside the repo
-DB_PATH = BASE_DIR / "db.sqlite3"
-os.makedirs(DB_PATH.parent, exist_ok=True)
+# Writable copy in /tmp
+TMP_DB = Path("/tmp/db.sqlite3")
+
+# Path to bundled (read-only) copy in repo
+REPO_DB = BASE_DIR / "db.sqlite3"
+
+# On cold start, copy bundled DB to writable /tmp
+try:
+    if REPO_DB.exists() and not TMP_DB.exists():
+        shutil.copy(REPO_DB, TMP_DB)
+except Exception as e:
+    print("Failed to copy DB template:", e)
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(DB_PATH),
+        "NAME": str(TMP_DB),
     }
 }
+
 
 
 
@@ -163,6 +174,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
