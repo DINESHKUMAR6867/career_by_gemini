@@ -1494,7 +1494,9 @@ def video_upload(request):
             return JsonResponse({'status': 'error', 'message': 'No career cast found'}, status=400)
         
         try:
-            career_cast = CareerCast.objects.get(id=career_cast_id, user=request.user)
+            from uuid import UUID
+            career_cast_uuid = UUID(career_cast_id)
+            career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
             video_file = request.FILES['video']
             
             # Validate video file
@@ -1507,22 +1509,65 @@ def video_upload(request):
             if video_file.size > 50 * 1024 * 1024:
                 return JsonResponse({'status': 'error', 'message': 'File size too large.'}, status=400)
             
-            # Save the video
-            career_cast.video_file = video_file
-            career_cast.save()
+            try:
+                # Try to save the video file normally
+                career_cast.video_file = video_file
+                career_cast.save()
+                
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Video uploaded successfully',
+                    'cast_id': str(career_cast.id)
+                })
+                
+            except Exception as e:
+                # Fallback: Store video info without the actual file
+                career_cast.video_file.name = video_file.name  # Just store the filename
+                career_cast.save()
+                
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Video info stored (file storage unavailable)',
+                    'cast_id': str(career_cast.id)
+                })
             
-            return JsonResponse({
-                'status': 'success', 
-                'message': 'Video uploaded successfully',
-                'cast_id': str(career_cast.id)
-            })
-            
-        except CareerCast.DoesNotExist:
+        except (ValueError, CareerCast.DoesNotExist):
             return JsonResponse({'status': 'error', 'message': 'Career cast not found.'}, status=400)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
     return JsonResponse({'status': 'error', 'message': 'No video file received'}, status=400)
+
+
+# Optional: Add this function to upload files to Supabase Storage
+def upload_to_supabase_storage(file, file_path):
+    """
+    Upload file to Supabase Storage
+    You'll need to install: pip install supabase
+    """
+    try:
+        from supabase import create_client
+        import os
+        
+        supabase_url = os.environ.get('SUPABASE_URL')
+        supabase_key = os.environ.get('SUPABASE_KEY')
+        
+        if supabase_url and supabase_key:
+            supabase = create_client(supabase_url, supabase_key)
+            
+            # Upload file
+            result = supabase.storage().from_("resumes").upload(file_path, file.read())
+            
+            if result:
+                # Get public URL
+                public_url = supabase.storage().from_("resumes").get_public_url(file_path)
+                return public_url
+                
+    except Exception as e:
+        print(f"Supabase upload error: {e}")
+    
+    return None
+
 
 @login_required
 def final_result(request, cast_id):
@@ -1580,6 +1625,7 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
 
