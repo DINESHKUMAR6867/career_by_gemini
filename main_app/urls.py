@@ -120,7 +120,6 @@
 # # # ]
 
 
-
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
@@ -138,9 +137,9 @@ urlpatterns = [
     path('video/upload/', views.video_upload, name='video_upload'),
     path('final-result/<uuid:cast_id>/', views.final_result, name='final_result'),
     path('download-resume/<uuid:cast_id>/', views.download_resume, name='download_resume'),
+    path('download_enhanced_resume/<uuid:cast_id>/', views.download_enhanced_resume, name='download_enhanced_resume'),  # ADD THIS LINE
     path('career-cast/<uuid:cast_id>/rewrite-teleprompter/', views.rewrite_teleprompter, name='rewrite_teleprompter'),
     path('logout/', views.logout_view, name='logout'),
-    path('debug-casts/', views.debug_career_casts, name='debug_casts'),
 ]
 
 if settings.DEBUG:
