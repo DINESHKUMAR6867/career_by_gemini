@@ -801,7 +801,7 @@ from django.http import HttpResponse
 def final_result(request, cast_id):
     """Display the final result with resume and video"""
     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-    print(f"Resume File URL: {career_cast.resume_file.url}")  # Debugging line
+    # print(f"Resume File URL: {career_cast.resume_file.url}")  # Debugging line
     return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
 
 # from django.http import FileResponse
@@ -885,6 +885,93 @@ from io import BytesIO
 import traceback
 import shutil
 
+# def download_enhanced_resume(request, cast_id):
+#     """
+#     Download resume with clickable Play Video button
+#     """
+#     print(f"=== DOWNLOAD REQUEST STARTED ===")
+#     print(f"Cast ID: {cast_id}")
+#     print(f"User: {request.user}")
+    
+#     try:
+#         career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+#         print(f"CareerCast found: {career_cast.id}")
+        
+#         if not career_cast.resume_file:
+#             print("ERROR: No resume file attached")
+#             messages.error(request, 'No resume file found.')
+#             return redirect('final_result', cast_id=cast_id)
+        
+#         # Get file info
+#         resume_path = career_cast.resume_file.path
+#         file_extension = os.path.splitext(resume_path)[1].lower()
+#         original_filename = career_cast.resume_file.name
+        
+#         print(f"Resume path: {resume_path}")
+#         print(f"File exists: {os.path.exists(resume_path)}")
+#         print(f"File extension: {file_extension}")
+#         print(f"Original filename: {original_filename}")
+        
+#         # Check if file exists
+#         if not os.path.exists(resume_path):
+#             print(f"ERROR: File does not exist at path: {resume_path}")
+#             messages.error(request, 'Resume file not found on server.')
+#             return redirect('final_result', cast_id=cast_id)
+        
+#         # Generate URL for button
+#         final_result_url = request.build_absolute_uri(f'/final-result/{cast_id}/')
+#         print(f"Final result URL: {final_result_url}")
+        
+#         # Process based on file type - CALL THE ACTUAL FUNCTIONS
+#         if file_extension == '.pdf':
+#             print("Processing as PDF file with button")
+#             modified_file_path = add_play_video_button_to_pdf_with_image(resume_path, original_filename, final_result_url)
+#             content_type = 'application/pdf'
+#             download_filename = f"enhanced_{original_filename}"
+            
+#         elif file_extension in ['.docx', '.doc']:
+#             print("Processing as DOCX file with button")
+#             modified_file_path = add_play_video_button_to_docx_with_image(resume_path, original_filename, final_result_url)
+#             content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+#             download_filename = f"enhanced_{original_filename}"
+            
+#         else:
+#             print(f"Unsupported file type, returning original: {file_extension}")
+#             # Return original file for unsupported types
+#             return FileResponse(
+#                 open(resume_path, 'rb'),
+#                 as_attachment=True,
+#                 filename=original_filename
+#             )
+        
+#         # Check if modified file was created
+#         if not os.path.exists(modified_file_path):
+#             print(f"ERROR: Modified file not created at: {modified_file_path}")
+#             messages.error(request, 'Failed to create enhanced resume.')
+#             return redirect('final_result', cast_id=cast_id)
+        
+#         print(f"SUCCESS: Enhanced resume created at: {modified_file_path}")
+#         print(f"File size: {os.path.getsize(modified_file_path)} bytes")
+        
+#         # Return the modified file
+#         response = FileResponse(
+#             open(modified_file_path, 'rb'),
+#             as_attachment=True,
+#             filename=download_filename
+#         )
+#         response['Content-Type'] = content_type
+        
+#         print("=== DOWNLOAD RESPONSE SENT ===")
+#         return response
+            
+#     except Exception as e:
+#         print(f"=== CRITICAL ERROR ===")
+#         print(f"Error: {str(e)}")
+#         print(traceback.format_exc())
+#         messages.error(request, f'Download failed: {str(e)}')
+#         return redirect('final_result', cast_id=cast_id)
+
+@login_required
 def download_enhanced_resume(request, cast_id):
     """
     Download resume with clickable Play Video button
@@ -897,76 +984,40 @@ def download_enhanced_resume(request, cast_id):
         career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
         print(f"CareerCast found: {career_cast.id}")
         
-        if not career_cast.resume_file:
+        # Check if resume exists using the new field
+        if not career_cast.resume_file_data:
             print("ERROR: No resume file attached")
             messages.error(request, 'No resume file found.')
             return redirect('final_result', cast_id=cast_id)
         
-        # Get file info
-        resume_path = career_cast.resume_file.path
-        file_extension = os.path.splitext(resume_path)[1].lower()
-        original_filename = career_cast.resume_file.name
+        # Get file info from the new fields
+        original_filename = career_cast.resume_file_name
+        file_extension = os.path.splitext(original_filename)[1].lower() if original_filename else ''
         
-        print(f"Resume path: {resume_path}")
-        print(f"File exists: {os.path.exists(resume_path)}")
+        print(f"Resume filename: {original_filename}")
         print(f"File extension: {file_extension}")
-        print(f"Original filename: {original_filename}")
         
-        # Check if file exists
-        if not os.path.exists(resume_path):
-            print(f"ERROR: File does not exist at path: {resume_path}")
-            messages.error(request, 'Resume file not found on server.')
-            return redirect('final_result', cast_id=cast_id)
-        
-        # Generate URL for button
-        final_result_url = request.build_absolute_uri(f'/final-result/{cast_id}/')
-        print(f"Final result URL: {final_result_url}")
-        
-        # Process based on file type - CALL THE ACTUAL FUNCTIONS
-        if file_extension == '.pdf':
-            print("Processing as PDF file with button")
-            modified_file_path = add_play_video_button_to_pdf_with_image(resume_path, original_filename, final_result_url)
-            content_type = 'application/pdf'
-            download_filename = f"enhanced_{original_filename}"
+        # For now, just return the regular resume since enhanced resume requires file system access
+        # which doesn't work on Vercel
+        try:
+            import base64
+            file_data = base64.b64decode(career_cast.resume_file_data)
             
-        elif file_extension in ['.docx', '.doc']:
-            print("Processing as DOCX file with button")
-            modified_file_path = add_play_video_button_to_docx_with_image(resume_path, original_filename, final_result_url)
-            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            download_filename = f"enhanced_{original_filename}"
+            response = HttpResponse(file_data, content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="enhanced_{original_filename}"'
             
-        else:
-            print(f"Unsupported file type, returning original: {file_extension}")
-            # Return original file for unsupported types
-            return FileResponse(
-                open(resume_path, 'rb'),
-                as_attachment=True,
-                filename=original_filename
-            )
-        
-        # Check if modified file was created
-        if not os.path.exists(modified_file_path):
-            print(f"ERROR: Modified file not created at: {modified_file_path}")
-            messages.error(request, 'Failed to create enhanced resume.')
-            return redirect('final_result', cast_id=cast_id)
-        
-        print(f"SUCCESS: Enhanced resume created at: {modified_file_path}")
-        print(f"File size: {os.path.getsize(modified_file_path)} bytes")
-        
-        # Return the modified file
-        response = FileResponse(
-            open(modified_file_path, 'rb'),
-            as_attachment=True,
-            filename=download_filename
-        )
-        response['Content-Type'] = content_type
-        
-        print("=== DOWNLOAD RESPONSE SENT ===")
-        return response
+            print("=== DOWNLOAD RESPONSE SENT ===")
+            return response
+            
+        except Exception as e:
+            print(f"Error creating enhanced resume: {e}")
+            messages.info(request, 'Enhanced resume feature requires file system access. Downloading regular resume.')
+            return redirect('download_resume', cast_id=cast_id)
             
     except Exception as e:
         print(f"=== CRITICAL ERROR ===")
         print(f"Error: {str(e)}")
+        import traceback
         print(traceback.format_exc())
         messages.error(request, f'Download failed: {str(e)}')
         return redirect('final_result', cast_id=cast_id)
@@ -1306,6 +1357,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
