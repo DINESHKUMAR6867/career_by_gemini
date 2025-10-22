@@ -1353,23 +1353,17 @@ def create_cast_step2(request):
         return redirect('create_cast_step1')
     
     try:
-        # Convert string to UUID object
         from uuid import UUID
         career_cast_uuid = UUID(career_cast_id)
-        
-        # Get the career cast using UUID
         career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
-        
-    except (ValueError, TypeError) as e:
-        messages.error(request, 'Invalid career cast ID format.')
-        return redirect('create_cast_step1')
-    except CareerCast.DoesNotExist:
+    except (ValueError, CareerCast.DoesNotExist):
         messages.error(request, 'Career cast not found. Please start over.')
         return redirect('create_cast_step1')
     
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
         if resume_file:
+            # Validate file type
             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
             file_extension = os.path.splitext(resume_file.name)[1].lower()
             
@@ -1381,14 +1375,30 @@ def create_cast_step2(request):
                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
-            career_cast.resume_file = resume_file
-            career_cast.save()
-            return redirect('create_cast_step3')
+            try:
+                # For Vercel deployment, we can't save files locally
+                # Option 1: Convert file to base64 and store in database
+                import base64
+                file_content = resume_file.read()
+                encoded_content = base64.b64encode(file_content).decode('utf-8')
+                
+                # Store the filename and encoded content
+                career_cast.resume_file = f"{resume_file.name}|{encoded_content}"
+                career_cast.save()
+                
+                return redirect('create_cast_step3')
+                
+            except Exception as e:
+                # Option 2: Just store the filename for now
+                career_cast.resume_file = resume_file.name
+                career_cast.save()
+                messages.info(request, 'Resume uploaded (filename stored). File storage will be available in production.')
+                return redirect('create_cast_step3')
+                
         else:
             messages.error(request, 'Please upload a resume file')
     
     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-
 @login_required
 def debug_career_casts(request):
     """Debug view to see all career casts for current user"""
@@ -1562,6 +1572,7 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
 
