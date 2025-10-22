@@ -1353,19 +1353,19 @@ def create_cast_step2(request):
         return redirect('create_cast_step1')
     
     try:
-        # Try to get the career cast - this should work now
-        career_cast = CareerCast.objects.get(id=career_cast_id, user=request.user)
+        # Convert string to UUID object
+        from uuid import UUID
+        career_cast_uuid = UUID(career_cast_id)
         
+        # Get the career cast using UUID
+        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+        
+    except (ValueError, TypeError) as e:
+        messages.error(request, 'Invalid career cast ID format.')
+        return redirect('create_cast_step1')
     except CareerCast.DoesNotExist:
-        # If not found, try to get the most recent one for this user
-        recent_cast = CareerCast.objects.filter(user=request.user).order_by('-created_at').first()
-        if recent_cast:
-            request.session['current_cast_id'] = str(recent_cast.id)
-            career_cast = recent_cast
-            messages.info(request, 'Using your most recent career cast.')
-        else:
-            messages.error(request, 'No career cast found. Please create a new one.')
-            return redirect('create_cast_step1')
+        messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
     
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
@@ -1562,5 +1562,6 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
