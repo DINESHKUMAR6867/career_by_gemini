@@ -110,8 +110,8 @@ def rewrite_teleprompter(request, cast_id):
     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
 
     try:
-        # Re-extract and regenerate
-        resume_content = extract_text_from_resume(career_cast.resume_file)
+        # Use the new extract_text_from_resume function
+        resume_content = extract_text_from_resume(career_cast)
         new_text = generate_teleprompter_text(
             career_cast.job_title,
             career_cast.job_description,
@@ -119,14 +119,11 @@ def rewrite_teleprompter(request, cast_id):
         )
 
         career_cast.teleprompter_text = new_text
-        
-        # Save the updated CareerCast instance
-        career_cast.save()  # Ensure the object is saved after update
+        career_cast.save()
 
         return JsonResponse({'success': True, 'teleprompter_text': new_text})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
 
 
 from django.contrib.auth import authenticate, login
@@ -363,9 +360,7 @@ def login_page(request):
 def dashboard(request):
     """User dashboard view"""
     try:
-        # Ensure that you're querying with the user instance
         career_casts = CareerCast.objects.filter(user=request.user).order_by('-created_at')
-
         profile_initials = request.user.get_profile_initials()
 
         return render(request, 'main_app/dashboard.html', {
@@ -374,8 +369,7 @@ def dashboard(request):
         })
     except Exception as e:
         print(f"Error fetching career casts: {e}")
-        return redirect('landing')  # Fallback if there's an error
-  # Fallback if there's an error
+        return redirect('landing')
 
 
 
@@ -645,15 +639,23 @@ def create_cast_step3(request):
     if not career_cast_id:
         return redirect('create_cast_step1')
 
-    career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    try:
+        from uuid import UUID
+        career_cast_uuid = UUID(career_cast_id)
+        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+    except (ValueError, CareerCast.DoesNotExist):
+        messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
 
-    if not career_cast.resume_file:
+    # Check if resume exists using the new field
+    if not career_cast.resume_file_data:
         messages.error(request, 'Please upload your resume first.')
         return redirect('create_cast_step2')
 
     try:
         if not career_cast.teleprompter_text or career_cast.teleprompter_text.strip() == "":
-            resume_content = extract_text_from_resume(career_cast.resume_file)
+            # Use the new extract_text_from_resume function that takes CareerCast object
+            resume_content = extract_text_from_resume(career_cast)
 
             print("\n--- DEBUG ---")
             print("JOB TITLE:", career_cast.job_title)
@@ -682,7 +684,6 @@ def create_cast_step3(request):
 
 
 
-
 @login_required
 def record_view(request):
     """Recording studio page"""
@@ -690,7 +691,13 @@ def record_view(request):
     if not career_cast_id:
         return redirect('create_cast_step1')
     
-    career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    try:
+        from uuid import UUID
+        career_cast_uuid = UUID(career_cast_id)
+        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+    except (ValueError, CareerCast.DoesNotExist):
+        messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
     
     context = {
         'tele': career_cast.teleprompter_text or "Hello! I'm excited to introduce myself for this position.",
@@ -1299,6 +1306,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
