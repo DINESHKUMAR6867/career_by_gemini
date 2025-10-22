@@ -612,22 +612,26 @@ def create_cast_step2(request):
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
             try:
-                # For Vercel - store file in memory
-                career_cast.resume_file.save(resume_file.name, resume_file, save=True)
+                # Read file and encode as base64
+                import base64
+                file_content = resume_file.read()
+                encoded_content = base64.b64encode(file_content).decode('utf-8')
+                
+                # Store in database
+                career_cast.resume_file_name = resume_file.name
+                career_cast.resume_file_data = encoded_content
                 career_cast.teleprompter_text = ""
                 career_cast.save()
+                
+                messages.success(request, 'Resume uploaded successfully!')
                 return redirect('create_cast_step3')
+                
             except Exception as e:
-                # Fallback: just store the filename
-                career_cast.resume_file.name = resume_file.name
-                career_cast.save()
-                messages.info(request, 'Resume uploaded successfully!')
-                return redirect('create_cast_step3')
+                messages.error(request, f'Error uploading resume: {str(e)}')
         else:
             messages.error(request, 'Please upload a resume file')
     
     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-        
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -757,22 +761,24 @@ def video_upload(request):
                 return JsonResponse({'status': 'error', 'message': 'File size too large. Please upload a video smaller than 50MB.'}, status=400)
             
             try:
-                # For Vercel - store file in memory
-                career_cast.video_file.save(video_file.name, video_file, save=True)
-                return JsonResponse({
-                    'status': 'success', 
-                    'message': 'Video uploaded successfully',
-                    'cast_id': str(career_cast.id)
-                })
-            except Exception as e:
-                # Fallback: just store the filename
-                career_cast.video_file.name = video_file.name
+                # Read video file and encode as base64
+                import base64
+                video_content = video_file.read()
+                encoded_video = base64.b64encode(video_content).decode('utf-8')
+                
+                # Store in database
+                career_cast.video_file_name = video_file.name
+                career_cast.video_file_data = encoded_video
                 career_cast.save()
+                
                 return JsonResponse({
                     'status': 'success', 
-                    'message': 'Video uploaded successfully',
+                    'message': 'Video uploaded successfully!',
                     'cast_id': str(career_cast.id)
                 })
+                
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f'Error processing video: {str(e)}'}, status=500)
             
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -817,15 +823,20 @@ def final_result(request, cast_id):
 
 @login_required
 def download_resume(request, cast_id):
-    """Download the resume file"""
+    """Download the resume file from database"""
     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-    if career_cast.resume_file:
+    if career_cast.resume_file_data and career_cast.resume_file_name:
         try:
-            response = HttpResponse(career_cast.resume_file, content_type='application/octet-stream')
-            response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file.name}"'
+            import base64
+            # Decode the base64 data
+            file_data = base64.b64decode(career_cast.resume_file_data)
+            
+            # Create response with file data
+            response = HttpResponse(file_data, content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file_name}"'
             return response
-        except:
-            messages.error(request, 'Resume file not accessible.')
+        except Exception as e:
+            messages.error(request, 'Error downloading resume file.')
             return redirect('final_result', cast_id=cast_id)
     else:
         messages.error(request, 'No resume file found')
@@ -833,20 +844,24 @@ def download_resume(request, cast_id):
 
 @login_required
 def view_video(request, cast_id):
-    """View the uploaded video"""
+    """View the uploaded video from database"""
     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-    if career_cast.video_file:
+    if career_cast.video_file_data and career_cast.video_file_name:
         try:
-            response = HttpResponse(career_cast.video_file, content_type='video/mp4')
-            response['Content-Disposition'] = f'inline; filename="{career_cast.video_file.name}"'
+            import base64
+            # Decode the base64 data
+            video_data = base64.b64decode(career_cast.video_file_data)
+            
+            # Create response with video data
+            response = HttpResponse(video_data, content_type='video/mp4')
+            response['Content-Disposition'] = f'inline; filename="{career_cast.video_file_name}"'
             return response
-        except:
-            messages.error(request, 'Video file not accessible.')
+        except Exception as e:
+            messages.error(request, 'Error playing video.')
             return redirect('final_result', cast_id=cast_id)
     else:
         messages.error(request, 'No video file found')
         return redirect('final_result', cast_id=cast_id)
-
 def logout_view(request):
     """Logout the user"""
     logout(request)
@@ -1284,6 +1299,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
