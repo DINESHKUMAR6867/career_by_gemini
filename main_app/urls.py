@@ -140,7 +140,9 @@ urlpatterns = [
     path('download-resume/<uuid:cast_id>/', views.download_resume, name='download_resume'),
     path('career-cast/<uuid:cast_id>/rewrite-teleprompter/', views.rewrite_teleprompter, name='rewrite_teleprompter'),
     path('logout/', views.logout_view, name='logout'),
+    path('debug-casts/', views.debug_career_casts, name='debug_casts'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
