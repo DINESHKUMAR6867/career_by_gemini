@@ -37,23 +37,23 @@ class CustomUser(AbstractUser):
         help_text='Specific permissions for this user.'
     )
 
-from django.db import models
-from django.conf import settings
-
 class CareerCast(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey('main_app.CustomUser', on_delete=models.CASCADE)
+    # In your models.py for CareerCast
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+# Link to CustomUser
     job_title = models.CharField(max_length=255)
     job_description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    teleprompter_text = models.TextField(null=True, blank=True)
+    teleprompter_text = models.TextField(null=True, blank=True) 
     updated_at = models.DateTimeField(auto_now=True)
-
-    # Resume file stored in Supabase
-    resume_file = models.FileField(upload_to='career_casts/resumes/', storage=SupabaseStorage(), null=True, blank=True)
     
-    # Video file stored in Supabase
-    video_file = models.FileField(upload_to='career_casts/videos/', storage=SupabaseStorage(), null=True, blank=True)
+    # Resume file
+    resume_file = models.FileField(upload_to='career_casts/resumes/', null=True, blank=True)
+    
+    # Video file
+    video_file = models.FileField(upload_to='career_casts/videos/', null=True, blank=True)
 
     def __str__(self):
         return self.job_title
+
+
