@@ -96,10 +96,11 @@ DATABASES = {
         'NAME': 'postgres',  # This is the database name
         'USER': 'postgres',  # Your Supabase PostgreSQL username
         'PASSWORD': 'Dinesh@123',  # Your password
-        'HOST': 'db.wdklgycbyzrefhutkydw.supabase.co',  # The host from your URL
+        'HOST': 'db.frdgrrfguukmqhmymott.supabase.co',  # The host from your URL
         'PORT': '5432',  # Default PostgreSQL port
     }
 }
+
 
 
 # DATABASES = {
@@ -340,6 +341,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
