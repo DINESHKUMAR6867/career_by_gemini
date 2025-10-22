@@ -28,15 +28,16 @@ openai.api_key = settings.OPENAI_API_KEY  # store in settings not hardcoded
 #     else:
 #         raise ValueError("Unsupported file format. Please upload PDF, DOCX, or TXT.")
 
+import os
+import base64
+from io import BytesIO
+
 def extract_text_from_resume(career_cast):
     """Extract text from resume stored in database"""
     if not career_cast.resume_file_data:
         return ""
     
     try:
-        import base64
-        from io import BytesIO
-        
         # Decode the base64 data
         file_data = base64.b64decode(career_cast.resume_file_data)
         file_like = BytesIO(file_data)
@@ -61,6 +62,33 @@ def extract_text_from_resume(career_cast):
     except Exception as e:
         print(f"Error extracting text from resume: {e}")
         return ""
+
+# Placeholder functions - replace with your actual implementations
+def extract_text_from_pdf(file_like):
+    """Extract text from PDF file"""
+    try:
+        # If you have PyPDF2 installed
+        from PyPDF2 import PdfReader
+        reader = PdfReader(file_like)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+        return text
+    except ImportError:
+        return "PDF text extraction not available"
+
+def extract_text_from_docx(file_like):
+    """Extract text from DOCX file"""
+    try:
+        # If you have python-docx installed
+        from docx import Document
+        doc = Document(file_like)
+        text = ""
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        return text
+    except ImportError:
+        return "DOCX text extraction not available"
 
 
 def generate_teleprompter_text(job_title, job_description, resume_text):
@@ -102,4 +130,5 @@ The script should:
 
     except Exception as e:
         return f"Error generating teleprompter text: {e}"
+
 
