@@ -1322,26 +1322,58 @@ def create_cast_step1(request):
         
         if job_title and job_description:
             try:
-                # Create CareerCast using the direct create method
-                career_cast = CareerCast.objects.create(
+                print(f"DEBUG: Creating CareerCast for user {request.user.id}")
+                print(f"DEBUG: User type: {type(request.user.id)}")
+                print(f"DEBUG: Job title: {job_title}")
+                
+                # Method 1: Direct object creation and save
+                career_cast = CareerCast(
                     user=request.user,
                     job_title=job_title,
                     job_description=job_description,
                     teleprompter_text=""
                 )
                 
-                # Store the ID in session
-                request.session['current_cast_id'] = str(career_cast.id)
-                request.session.modified = True
+                # Validate before saving
+                career_cast.full_clean()
                 
-                # Verify it was created
-                if CareerCast.objects.filter(id=career_cast.id, user=request.user).exists():
+                # Save to database
+                career_cast.save()
+                
+                print(f"DEBUG: CareerCast created successfully with ID: {career_cast.id}")
+                
+                # Verify it exists in database
+                if CareerCast.objects.filter(id=career_cast.id).exists():
+                    request.session['current_cast_id'] = str(career_cast.id)
+                    request.session.modified = True
+                    print(f"DEBUG: Session set to: {request.session['current_cast_id']}")
                     return redirect('create_cast_step2')
                 else:
-                    messages.error(request, 'Failed to create career cast. Please try again.')
+                    print("DEBUG: CareerCast not found after creation")
+                    messages.error(request, 'Career cast was created but not found. Please try again.')
                     
             except Exception as e:
-                messages.error(request, f'Error creating career cast: {str(e)}')
+                print(f"DEBUG: Error in career cast creation: {str(e)}")
+                print(f"DEBUG: Error type: {type(e)}")
+                
+                # Fallback: Try alternative method
+                try:
+                    print("DEBUG: Trying alternative creation method...")
+                    career_cast = CareerCast.objects.create(
+                        user_id=request.user.id,  # Use user_id directly
+                        job_title=job_title,
+                        job_description=job_description,
+                        teleprompter_text=""
+                    )
+                    
+                    request.session['current_cast_id'] = str(career_cast.id)
+                    request.session.modified = True
+                    print(f"DEBUG: Alternative method successful: {career_cast.id}")
+                    return redirect('create_cast_step2')
+                    
+                except Exception as e2:
+                    print(f"DEBUG: Alternative method failed: {str(e2)}")
+                    messages.error(request, f'Failed to create career cast: {str(e2)}')
         else:
             messages.error(request, 'Please fill in all fields')
     
@@ -1356,16 +1388,30 @@ def create_cast_step2(request):
         return redirect('create_cast_step1')
     
     try:
-        # Get the career cast
+        print(f"DEBUG: Looking for CareerCast with ID: {career_cast_id}")
+        
+        # Get all career casts for this user for debugging
+        user_casts = CareerCast.objects.filter(user=request.user)
+        print(f"DEBUG: User has {user_casts.count()} career casts")
+        for cast in user_casts:
+            print(f"DEBUG: Cast ID: {cast.id}, Title: {cast.job_title}")
+        
+        # Try to get the specific career cast
         career_cast = CareerCast.objects.get(id=career_cast_id, user=request.user)
+        print(f"DEBUG: Found CareerCast: {career_cast.job_title}")
+        
     except CareerCast.DoesNotExist:
+        print(f"DEBUG: CareerCast not found for ID: {career_cast_id}")
         messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
+    except Exception as e:
+        print(f"DEBUG: Other error: {str(e)}")
+        messages.error(request, 'Error accessing career cast. Please start over.')
         return redirect('create_cast_step1')
     
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
         if resume_file:
-            # Validate file type
             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
             file_extension = os.path.splitext(resume_file.name)[1].lower()
             
@@ -1373,15 +1419,12 @@ def create_cast_step2(request):
                 messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
-            # Validate file size
             if resume_file.size > 5 * 1024 * 1024:
                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
-            # Save the file
             career_cast.resume_file = resume_file
             career_cast.save()
-            
             return redirect('create_cast_step3')
         else:
             messages.error(request, 'Please upload a resume file')
@@ -1541,3 +1584,4 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
