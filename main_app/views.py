@@ -408,21 +408,42 @@ from django.utils import timezone
 
 def create_cast_step1(request):
     """Step 1: Create career cast - job details"""
+    print("DEBUG: Entering create_cast_step1")
+    
     if request.method == 'POST':
         job_title = request.POST.get('job_title')
         job_description = request.POST.get('job_description')
         
+        print(f"DEBUG: Form data - job_title: {job_title}, job_description: {job_description}")
+        
         if job_title and job_description:
-            career_cast = CareerCast.objects.create(
-                user=request.user,
-                job_title=job_title,
-                job_description=job_description,
-                teleprompter_text=""
-            )
-            # Store UUID as string in session
-            request.session['current_cast_id'] = str(career_cast.id)
-            print(f"Created CareerCast with ID: {career_cast.id} (type: {type(career_cast.id)})")
-            return redirect('create_cast_step2')
+            try:
+                # Create the CareerCast object
+                career_cast = CareerCast.objects.create(
+                    user=request.user,
+                    job_title=job_title,
+                    job_description=job_description,
+                    teleprompter_text=""
+                )
+                
+                print(f"DEBUG: Successfully created CareerCast - ID: {career_cast.id}, Type: {type(career_cast.id)}")
+                
+                # Store UUID as string in session
+                request.session['current_cast_id'] = str(career_cast.id)
+                request.session.modified = True  # Ensure session is saved
+                
+                print(f"DEBUG: Stored in session: {request.session['current_cast_id']}")
+                print(f"DEBUG: Session keys: {list(request.session.keys())}")
+                
+                # Verify the object was saved
+                saved_cast = CareerCast.objects.get(id=career_cast.id)
+                print(f"DEBUG: Verified saved CareerCast - ID: {saved_cast.id}")
+                
+                return redirect('create_cast_step2')
+                
+            except Exception as e:
+                print(f"DEBUG: Error creating CareerCast: {str(e)}")
+                messages.error(request, f'Error creating career cast: {str(e)}')
         else:
             messages.error(request, 'Please fill in all fields')
     
@@ -468,48 +489,70 @@ from .models import CareerCast
 
 @login_required
 def create_cast_step2(request):
-    career_cast_id = request.session.get('current_cast_id')
+    print("DEBUG: Entering create_cast_step2")
     
-    # Debug information
-    print(f"DEBUG: Session career_cast_id = {career_cast_id}")
+    # Debug session contents
+    print(f"DEBUG: All session keys: {list(request.session.keys())}")
+    print(f"DEBUG: Session contents: {dict(request.session)}")
+    
+    career_cast_id = request.session.get('current_cast_id')
+    print(f"DEBUG: Retrieved career_cast_id from session: {career_cast_id}")
     
     if not career_cast_id:
-        messages.error(request, 'Please start by creating a career cast.')
+        print("DEBUG: No career_cast_id in session")
+        messages.error(request, 'Session expired. Please start over.')
         return redirect('create_cast_step1')
     
     try:
         # Convert string UUID from session to UUID object
         from uuid import UUID
         career_cast_uuid = UUID(career_cast_id)
+        print(f"DEBUG: Converted to UUID: {career_cast_uuid}")
         
-        # Debug
-        print(f"DEBUG: Converted UUID = {career_cast_uuid}")
+        # Debug: Check all CareerCast objects for this user
+        user_casts = CareerCast.objects.filter(user=request.user)
+        print(f"DEBUG: User has {user_casts.count()} CareerCast objects")
+        for cast in user_casts:
+            print(f"DEBUG: Cast ID: {cast.id}, Title: {cast.job_title}")
         
-        # Get the career cast
+        # Get the specific career cast
         career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
-        
-        # Debug success
-        print(f"DEBUG: Found CareerCast - {career_cast.job_title}")
+        print(f"DEBUG: Successfully found CareerCast: {career_cast.job_title}")
         
     except ValueError as e:
         print(f"DEBUG: Invalid UUID format - {e}")
-        # Clear invalid session and redirect to step1
+        # Clear invalid session
         if 'current_cast_id' in request.session:
             del request.session['current_cast_id']
-        messages.error(request, 'Invalid session. Please create a new career cast.')
+        messages.error(request, 'Invalid session data. Please create a new career cast.')
         return redirect('create_cast_step1')
         
     except CareerCast.DoesNotExist:
-        print(f"DEBUG: CareerCast not found for UUID {career_cast_uuid} and user {request.user}")
-        # Clear invalid session and redirect to step1
+        print(f"DEBUG: CareerCast not found for UUID {career_cast_uuid}")
+        print(f"DEBUG: User: {request.user}, User ID: {request.user.id}")
+        
+        # Clear invalid session
         if 'current_cast_id' in request.session:
             del request.session['current_cast_id']
-        messages.error(request, 'Career cast not found. Please create a new one.')
-        return redirect('create_cast_step1')
+            
+        # Check if user has any CareerCast objects
+        user_casts = CareerCast.objects.filter(user=request.user)
+        if user_casts.exists():
+            print("DEBUG: User has other CareerCast objects, but not the one in session")
+            # Use the most recent one as fallback
+            recent_cast = user_casts.order_by('-created_at').first()
+            request.session['current_cast_id'] = str(recent_cast.id)
+            messages.info(request, 'Using your most recent career cast.')
+            return redirect('create_cast_step2')
+        else:
+            messages.error(request, 'No career cast found. Please create a new one.')
+            return redirect('create_cast_step1')
         
     except Exception as e:
         print(f"DEBUG: Unexpected error - {e}")
-        messages.error(request, 'An error occurred. Please try again.')
+        import traceback
+        traceback.print_exc()
+        messages.error(request, 'An unexpected error occurred. Please try again.')
         return redirect('create_cast_step1')
     
     # Handle POST request (file upload)
@@ -531,13 +574,14 @@ def create_cast_step2(request):
             career_cast.resume_file = resume_file
             career_cast.teleprompter_text = ""  # clear any stale text
             career_cast.save()
+            
+            print(f"DEBUG: Successfully saved resume file for CareerCast {career_cast.id}")
 
             return redirect('create_cast_step3')
         else:
             messages.error(request, 'Please upload a resume file')
     
     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-
 
 
 
@@ -1140,6 +1184,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
