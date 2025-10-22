@@ -119,7 +119,9 @@ def rewrite_teleprompter(request, cast_id):
         )
 
         career_cast.teleprompter_text = new_text
-        career_cast.save()
+        
+        # Save the updated CareerCast instance
+        career_cast.save()  # Ensure the object is saved after update
 
         return JsonResponse({'success': True, 'teleprompter_text': new_text})
     except Exception as e:
@@ -312,15 +314,18 @@ def verify_otp(request):
                 and user.otp_created_at
                 and timezone.now() <= user.otp_created_at + timedelta(minutes=10)
             ):
+                # Reset OTP after successful verification
                 user.otp = None
                 user.otp_created_at = None
                 user.is_verified = True
+                
+                # Save the changes to the user object
                 user.save()
 
                 login(request, user, backend="main_app.backends.EmailBackend")
                 messages.success(request, "OTP verified successfully!")
-                
-                # 🚀 Always go directly to dashboard — no query params
+
+                # Always redirect to the dashboard after OTP verification
                 return redirect("dashboard")
 
             messages.error(request, "Invalid or expired OTP. Please try again.")
@@ -329,8 +334,6 @@ def verify_otp(request):
             return redirect("auth")
 
     return render(request, "main_app/verify_otp.html", {"email": email})
-
-
 
 
 
@@ -1044,6 +1047,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
