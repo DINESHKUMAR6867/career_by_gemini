@@ -210,7 +210,13 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Use /tmp directory which is writable on Vercel
+MEDIA_ROOT = '/tmp/media'
+
+# Or use in-memory file storage
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB - keep files in memory
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+# MEDIA_ROOT = BASE_DIR / "media"
 
 # ─── AUTHENTICATION ──────────────────────────────────────
 AUTH_USER_MODEL = "main_app.CustomUser"
@@ -352,6 +358,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
