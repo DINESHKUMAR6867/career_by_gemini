@@ -1,491 +1,491 @@
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib.auth import login, authenticate, logout
-# from django.contrib.auth.decorators import login_required
-# from django.contrib import messages
-# from django.http import JsonResponse, HttpResponse
-# from django.conf import settings
-# from django.utils import timezone
-# from django.core.mail import send_mail
-# from .models import CustomUser, CareerCast
-# import json
-# import random
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponse
+from django.conf import settings
+from django.utils import timezone
+from django.core.mail import send_mail
+from .models import CustomUser, CareerCast
+import json
+import random
 
-# import os
-# from datetime import datetime, timedelta
-# import uuid
-# import msal
-# import requests
-# from .utils import generate_teleprompter_text
+import os
+from datetime import datetime, timedelta
+import uuid
+import msal
+import requests
+from .utils import generate_teleprompter_text
 
-# # Initialize Gemini (if used in your project)
+# Initialize Gemini (if used in your project)
 
-# def generate_otp():
-#     """Generates a 6-digit OTP"""
-#     return str(random.randint(100000, 999999))
+def generate_otp():
+    """Generates a 6-digit OTP"""
+    return str(random.randint(100000, 999999))
 
-# def send_otp_email(email, otp):
-#     """Send OTP email via Microsoft Graph API (Application-level permissions)"""
-#     access_token = get_outlook_access_token()
+def send_otp_email(email, otp):
+    """Send OTP email via Microsoft Graph API (Application-level permissions)"""
+    access_token = get_outlook_access_token()
 
-#     # Prepare email data
-#     email_data = {
-#         "message": {
-#             "subject": "Your CareerCast OTP Verification Code",
-#             "body": {
-#                 "contentType": "Text",
-#                 "content": f"Hello, \n\nYour OTP verification code for CareerCast is: {otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nCareerCast Team"
-#             },
-#             "toRecipients": [
-#                 {
-#                     "emailAddress": {
-#                         "address": email
-#                     }
-#                 }
-#             ]
-#         },
-#         "saveToSentItems": "true"
-#     }
+    # Prepare email data
+    email_data = {
+        "message": {
+            "subject": "Your CareerCast OTP Verification Code",
+            "body": {
+                "contentType": "Text",
+                "content": f"Hello, \n\nYour OTP verification code for CareerCast is: {otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nCareerCast Team"
+            },
+            "toRecipients": [
+                {
+                    "emailAddress": {
+                        "address": email
+                    }
+                }
+            ]
+        },
+        "saveToSentItems": "true"
+    }
 
-#     # Send email using Microsoft Graph API (Application permissions)
-#     graph_url = f"https://graph.microsoft.com/v1.0/users/{settings.OUTLOOK_SENDER_EMAIL}/sendMail"
-#     response = requests.post(
-#         graph_url,
-#         headers={
-#             'Authorization': f'Bearer {access_token}',
-#             'Content-Type': 'application/json'
-#         },
-#         json=email_data
-#     )
+    # Send email using Microsoft Graph API (Application permissions)
+    graph_url = f"https://graph.microsoft.com/v1.0/users/{settings.OUTLOOK_SENDER_EMAIL}/sendMail"
+    response = requests.post(
+        graph_url,
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        },
+        json=email_data
+    )
 
-#     if response.status_code == 202:
-#         return True
-#     else:
-#         print(f"Error sending OTP email: {response.text}")
-#         return False
+    if response.status_code == 202:
+        return True
+    else:
+        print(f"Error sending OTP email: {response.text}")
+        return False
 
-# def get_outlook_access_token():
-#     """Fetches access token using OAuth2 for Microsoft Graph API."""
-#     authority = f"https://login.microsoftonline.com/{settings.OUTLOOK_TENANT_ID}"
-#     app = msal.ConfidentialClientApplication(
-#         settings.OUTLOOK_CLIENT_ID,
-#         authority=authority,
-#         client_credential=settings.OUTLOOK_CLIENT_SECRET
-#     )
+def get_outlook_access_token():
+    """Fetches access token using OAuth2 for Microsoft Graph API."""
+    authority = f"https://login.microsoftonline.com/{settings.OUTLOOK_TENANT_ID}"
+    app = msal.ConfidentialClientApplication(
+        settings.OUTLOOK_CLIENT_ID,
+        authority=authority,
+        client_credential=settings.OUTLOOK_CLIENT_SECRET
+    )
 
-#     # Get token
-#     result = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    # Get token
+    result = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
 
-#     if "access_token" in result:
-#         return result["access_token"]
-#     else:
-#         raise Exception("Error obtaining access token.")
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        raise Exception("Error obtaining access token.")
 
-# def landing_page(request):
-#     """Landing page view"""
-#     if request.user.is_authenticated:
-#         return redirect('dashboard')
-#     return render(request, 'main_app/landing.html')
+def landing_page(request):
+    """Landing page view"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'main_app/landing.html')
 
-# from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt
-# from django.contrib.auth.decorators import login_required
-# from .models import CareerCast
-# from .utils import extract_text_from_resume, generate_teleprompter_text
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import CareerCast
+from .utils import extract_text_from_resume, generate_teleprompter_text
 
-# from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt
-# from django.contrib.auth.decorators import login_required
-# from django.utils.decorators import method_decorator
-# from .models import CareerCast
-# from .utils import extract_text_from_resume, generate_teleprompter_text
-# from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import CareerCast
+from .utils import extract_text_from_resume, generate_teleprompter_text
+from django.shortcuts import get_object_or_404
 
-# @csrf_exempt
-# @login_required
-# def rewrite_teleprompter(request, cast_id):
-#     """Regenerate the teleprompter text for an existing CareerCast"""
-#     if request.method != 'POST':
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+@csrf_exempt
+@login_required
+def rewrite_teleprompter(request, cast_id):
+    """Regenerate the teleprompter text for an existing CareerCast"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-#     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+    career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
 
-#     try:
-#         # Re-extract and regenerate
-#         resume_content = extract_text_from_resume(career_cast.resume_file)
-#         new_text = generate_teleprompter_text(
-#             career_cast.job_title,
-#             career_cast.job_description,
-#             resume_content
-#         )
+    try:
+        # Re-extract and regenerate
+        resume_content = extract_text_from_resume(career_cast.resume_file)
+        new_text = generate_teleprompter_text(
+            career_cast.job_title,
+            career_cast.job_description,
+            resume_content
+        )
 
-#         career_cast.teleprompter_text = new_text
+        career_cast.teleprompter_text = new_text
         
-#         # Save the updated CareerCast instance
-#         career_cast.save()  # Ensure the object is saved after update
+        # Save the updated CareerCast instance
+        career_cast.save()  # Ensure the object is saved after update
 
-#         return JsonResponse({'success': True, 'teleprompter_text': new_text})
-#     except Exception as e:
-#         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        return JsonResponse({'success': True, 'teleprompter_text': new_text})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from django.shortcuts import render, redirect
-# from .models import CustomUser
-# from django.utils import timezone
-# from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import CustomUser
+from django.utils import timezone
+from django.contrib.auth.forms import AuthenticationForm
 
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from django.shortcuts import render, redirect
-# from .models import CustomUser
-# from django.http import HttpResponseRedirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import CustomUser
+from django.http import HttpResponseRedirect
 
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from django.shortcuts import render, redirect
-# from .models import CustomUser
-# from django.http import HttpResponseRedirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import CustomUser
+from django.http import HttpResponseRedirect
 
-# from django.shortcuts import render, redirect
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from .models import CustomUser
-# from django.http import HttpResponseRedirect
-# from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from .models import CustomUser
+from django.http import HttpResponseRedirect
+from django.contrib.auth.forms import AuthenticationForm
 
-# def auth_page(request):
-#     """Authentication page for OTP login and signup"""
+def auth_page(request):
+    """Authentication page for OTP login and signup"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')  # If already authenticated, redirect to dashboard
+        
+    if request.method == 'POST':
+        if 'signup' in request.POST:
+            # Handle signup logic
+            email = request.POST.get('email')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+
+            # Validate passwords
+            if password1 != password2:
+                messages.error(request, 'Passwords do not match.')
+                return redirect('auth')
+
+            # Check if the email already exists
+            if CustomUser.objects.filter(email=email).exists():
+                messages.error(request, 'Email already in use.')
+                return redirect('auth')
+
+            # Create user (Django automatically generates a UUID for the id)
+            user = CustomUser.objects.create_user(
+                username=email.split('@')[0],  # Can generate username based on email
+                email=email,
+                password=password1,
+                first_name=first_name,
+                last_name=last_name
+            )
+
+            # Set OTP for the user
+            otp_code = generate_otp()
+            user.otp = otp_code
+            user.otp_created_at = timezone.now()
+            user.save()
+
+            # Send OTP email
+            send_otp_email(email, otp_code)
+
+            request.session['email_for_verification'] = email
+            messages.success(request, f'OTP sent to {email}')
+            return redirect('verify_otp')
+
+        if 'login' in request.POST:
+            # Handle login logic (email + password)
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+
+            # Authenticate using email and password (now handled by custom backend)
+            user = authenticate(request, email=email, password=password)
+
+            if user is not None:
+                login(request, user)
+
+                # Directly redirect to dashboard after login
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Invalid email or password.')
+
+    return render(request, 'main_app/auth.html')
+
+
+
+from django.contrib.auth import login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
+
+from django.contrib.auth import login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
+
+from datetime import timedelta
+from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.contrib.auth import login
+from .models import CustomUser
+
+# def verify_otp(request):
+#     """Verify OTP entered by the user during signup"""
 #     if request.user.is_authenticated:
 #         return redirect('dashboard')  # If already authenticated, redirect to dashboard
-        
-#     if request.method == 'POST':
-#         if 'signup' in request.POST:
-#             # Handle signup logic
-#             email = request.POST.get('email')
-#             first_name = request.POST.get('first_name')
-#             last_name = request.POST.get('last_name')
-#             password1 = request.POST.get('password1')
-#             password2 = request.POST.get('password2')
 
-#             # Validate passwords
-#             if password1 != password2:
-#                 messages.error(request, 'Passwords do not match.')
-#                 return redirect('auth')
-
-#             # Check if the email already exists
-#             if CustomUser.objects.filter(email=email).exists():
-#                 messages.error(request, 'Email already in use.')
-#                 return redirect('auth')
-
-#             # Create user (Django automatically generates a UUID for the id)
-#             user = CustomUser.objects.create_user(
-#                 username=email.split('@')[0],  # Can generate username based on email
-#                 email=email,
-#                 password=password1,
-#                 first_name=first_name,
-#                 last_name=last_name
-#             )
-
-#             # Set OTP for the user
-#             otp_code = generate_otp()
-#             user.otp = otp_code
-#             user.otp_created_at = timezone.now()
-#             user.save()
-
-#             # Send OTP email
-#             send_otp_email(email, otp_code)
-
-#             request.session['email_for_verification'] = email
-#             messages.success(request, f'OTP sent to {email}')
-#             return redirect('verify_otp')
-
-#         if 'login' in request.POST:
-#             # Handle login logic (email + password)
-#             email = request.POST.get('email')
-#             password = request.POST.get('password')
-
-#             # Authenticate using email and password (now handled by custom backend)
-#             user = authenticate(request, email=email, password=password)
-
-#             if user is not None:
-#                 login(request, user)
-
-#                 # Directly redirect to dashboard after login
-#                 return redirect('dashboard')
-#             else:
-#                 messages.error(request, 'Invalid email or password.')
-
-#     return render(request, 'main_app/auth.html')
-
-
-
-# from django.contrib.auth import login
-# from django.contrib import messages
-# from django.shortcuts import render, redirect
-# from .models import CustomUser
-# from django.utils import timezone
-# from datetime import timedelta
-
-# from django.contrib.auth import login
-# from django.contrib import messages
-# from django.shortcuts import render, redirect
-# from .models import CustomUser
-# from django.utils import timezone
-# from datetime import timedelta
-
-# from datetime import timedelta
-# from django.utils import timezone
-# from django.shortcuts import render, redirect
-# from django.http import HttpResponseRedirect
-# from django.contrib import messages
-# from django.contrib.auth import login
-# from .models import CustomUser
-
-# # def verify_otp(request):
-# #     """Verify OTP entered by the user during signup"""
-# #     if request.user.is_authenticated:
-# #         return redirect('dashboard')  # If already authenticated, redirect to dashboard
-
-# #     email = request.session.get('email_for_verification')
-# #     if not email:
-# #         return redirect('auth')  # Redirect back if no email in session
-
-# #     if request.method == 'POST':
-# #         otp_entered = request.POST.get('otp')
-# #         if otp_entered:
-# #             try:
-# #                 user = CustomUser.objects.get(email=email)
-                
-# #                 # Check OTP validity (10 min expiry)
-# #                 if (user.otp == otp_entered and 
-# #                     user.otp_created_at and 
-# #                     timezone.now() <= user.otp_created_at + timedelta(minutes=10)):
-                    
-# #                     user.otp = None
-# #                     user.otp_created_at = None
-# #                     user.is_verified = True
-# #                     user.save()
-                    
-# #                     # Log user in
-# #                     login(request, user, backend='main_app.backends.EmailBackend')
-# #                     messages.success(request, 'Successfully verified! Welcome to CareerCast.')
-
-# #                     # ✅ Redirect properly
-# #                     next_url = request.GET.get('next')
-# #                     if next_url:
-# #                         return HttpResponseRedirect(next_url)
-# #                     else:
-# #                         return redirect('dashboard')
-
-# #                 else:
-# #                     messages.error(request, 'Invalid or expired OTP. Please try again.')
-
-# #             except CustomUser.DoesNotExist:
-# #                 messages.error(request, 'User not found. Please register again.')
-# #                 return redirect('auth')
-# #         else:
-# #             messages.error(request, 'Please enter the OTP.')
-
-# #     return render(request, 'main_app/verify_otp.html', {'email': email})
-# def verify_otp(request):
-#     """Verify OTP and always redirect safely"""
-#     if request.user.is_authenticated:
-#         return redirect("dashboard")
-
-#     email = request.session.get("email_for_verification")
+#     email = request.session.get('email_for_verification')
 #     if not email:
-#         messages.error(request, "Session expired. Please log in again.")
-#         return redirect("auth")
-
-#     if request.method == "POST":
-#         otp_entered = request.POST.get("otp")
-
-#         if not otp_entered:
-#             messages.error(request, "Please enter the OTP.")
-#             return render(request, "main_app/verify_otp.html", {"email": email})
-
-#         try:
-#             user = CustomUser.objects.get(email=email)
-
-#             if (
-#                 user.otp == otp_entered
-#                 and user.otp_created_at
-#                 and timezone.now() <= user.otp_created_at + timedelta(minutes=10)
-#             ):
-#                 # Reset OTP after successful verification
-#                 user.otp = None
-#                 user.otp_created_at = None
-#                 user.is_verified = True
-                
-#                 # Save the changes to the user object
-#                 user.save()
-
-#                 login(request, user, backend="main_app.backends.EmailBackend")
-#                 messages.success(request, "OTP verified successfully!")
-
-#                 # Always redirect to the dashboard after OTP verification
-#                 return redirect("dashboard")
-
-#             messages.error(request, "Invalid or expired OTP. Please try again.")
-#         except CustomUser.DoesNotExist:
-#             messages.error(request, "User not found. Please register again.")
-#             return redirect("auth")
-
-#     return render(request, "main_app/verify_otp.html", {"email": email})
-
-
-
-
-# def login_page(request):
-#     """Login page where users can log in after OTP verification"""
-#     if request.user.is_authenticated:
-#         return redirect('dashboard')
+#         return redirect('auth')  # Redirect back if no email in session
 
 #     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         password = request.POST.get('password')
+#         otp_entered = request.POST.get('otp')
+#         if otp_entered:
+#             try:
+#                 user = CustomUser.objects.get(email=email)
+                
+#                 # Check OTP validity (10 min expiry)
+#                 if (user.otp == otp_entered and 
+#                     user.otp_created_at and 
+#                     timezone.now() <= user.otp_created_at + timedelta(minutes=10)):
+                    
+#                     user.otp = None
+#                     user.otp_created_at = None
+#                     user.is_verified = True
+#                     user.save()
+                    
+#                     # Log user in
+#                     login(request, user, backend='main_app.backends.EmailBackend')
+#                     messages.success(request, 'Successfully verified! Welcome to CareerCast.')
 
-#         # Authenticate user
-#         user = authenticate(request, username=email, password=password)
-#         if user is not None:
-#             login(request, user)
-#             messages.success(request, 'Login successful!')
-#             return redirect('dashboard')
+#                     # ✅ Redirect properly
+#                     next_url = request.GET.get('next')
+#                     if next_url:
+#                         return HttpResponseRedirect(next_url)
+#                     else:
+#                         return redirect('dashboard')
+
+#                 else:
+#                     messages.error(request, 'Invalid or expired OTP. Please try again.')
+
+#             except CustomUser.DoesNotExist:
+#                 messages.error(request, 'User not found. Please register again.')
+#                 return redirect('auth')
 #         else:
-#             messages.error(request, 'Invalid email or password.')
+#             messages.error(request, 'Please enter the OTP.')
+
+#     return render(request, 'main_app/verify_otp.html', {'email': email})
+def verify_otp(request):
+    """Verify OTP and always redirect safely"""
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    email = request.session.get("email_for_verification")
+    if not email:
+        messages.error(request, "Session expired. Please log in again.")
+        return redirect("auth")
+
+    if request.method == "POST":
+        otp_entered = request.POST.get("otp")
+
+        if not otp_entered:
+            messages.error(request, "Please enter the OTP.")
+            return render(request, "main_app/verify_otp.html", {"email": email})
+
+        try:
+            user = CustomUser.objects.get(email=email)
+
+            if (
+                user.otp == otp_entered
+                and user.otp_created_at
+                and timezone.now() <= user.otp_created_at + timedelta(minutes=10)
+            ):
+                # Reset OTP after successful verification
+                user.otp = None
+                user.otp_created_at = None
+                user.is_verified = True
+                
+                # Save the changes to the user object
+                user.save()
+
+                login(request, user, backend="main_app.backends.EmailBackend")
+                messages.success(request, "OTP verified successfully!")
+
+                # Always redirect to the dashboard after OTP verification
+                return redirect("dashboard")
+
+            messages.error(request, "Invalid or expired OTP. Please try again.")
+        except CustomUser.DoesNotExist:
+            messages.error(request, "User not found. Please register again.")
+            return redirect("auth")
+
+    return render(request, "main_app/verify_otp.html", {"email": email})
+
+
+
+
+def login_page(request):
+    """Login page where users can log in after OTP verification"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # Authenticate user
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Login successful!')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Invalid email or password.')
     
-#     return render(request, 'main_app/login.html')
+    return render(request, 'main_app/login.html')
 
 
-# @login_required
-# def dashboard(request):
-#     """User dashboard view"""
-#     try:
-#         # Ensure that you're querying with the user instance
-#         career_casts = CareerCast.objects.filter(user=request.user).order_by('-created_at')
+@login_required
+def dashboard(request):
+    """User dashboard view"""
+    try:
+        # Ensure that you're querying with the user instance
+        career_casts = CareerCast.objects.filter(user=request.user).order_by('-created_at')
 
-#         profile_initials = request.user.get_profile_initials()
+        profile_initials = request.user.get_profile_initials()
 
-#         return render(request, 'main_app/dashboard.html', {
-#             'career_casts': career_casts,
-#             'profile_initials': profile_initials
-#         })
-#     except Exception as e:
-#         print(f"Error fetching career casts: {e}")
-#         return redirect('landing')  # Fallback if there's an error
-#   # Fallback if there's an error
-
-
+        return render(request, 'main_app/dashboard.html', {
+            'career_casts': career_casts,
+            'profile_initials': profile_initials
+        })
+    except Exception as e:
+        print(f"Error fetching career casts: {e}")
+        return redirect('landing')  # Fallback if there's an error
+  # Fallback if there's an error
 
 
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from .models import CareerCast
-# from django.utils import timezone
 
-# # def create_cast_step1(request):
-# #     """Step 1: Create career cast - job details"""
-# #     if request.method == 'POST':
-# #         job_title = request.POST.get('job_title')
-# #         job_description = request.POST.get('job_description')
-        
-# #         if job_title and job_description:
-# #             # Create CareerCast with teleprompter_text field
-# #             career_cast = CareerCast.objects.create(
-# #                 user=request.user,
-# #                 job_title=job_title,
-# #                 job_description=job_description,
-# #                 teleprompter_text=""  # Set initial empty value or leave it blank
-# #             )
-# #             request.session['current_cast_id'] = str(career_cast.id)
-# #             return redirect('create_cast_step2')
-# #         else:
-# #             messages.error(request, 'Please fill in all fields')
-    
-# #     return render(request, 'main_app/step1_job.html')
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import CareerCast
+from django.utils import timezone
 
 # def create_cast_step1(request):
 #     """Step 1: Create career cast - job details"""
-#     print("DEBUG: Entering create_cast_step1")
-    
 #     if request.method == 'POST':
 #         job_title = request.POST.get('job_title')
 #         job_description = request.POST.get('job_description')
         
-#         print(f"DEBUG: Form data - job_title: {job_title}, job_description: {job_description}")
-        
 #         if job_title and job_description:
-#             try:
-#                 # Create the CareerCast object
-#                 career_cast = CareerCast.objects.create(
-#                     user=request.user,
-#                     job_title=job_title,
-#                     job_description=job_description,
-#                     teleprompter_text=""
-#                 )
-                
-#                 print(f"DEBUG: Successfully created CareerCast - ID: {career_cast.id}, Type: {type(career_cast.id)}")
-                
-#                 # Store UUID as string in session
-#                 request.session['current_cast_id'] = str(career_cast.id)
-#                 request.session.modified = True  # Ensure session is saved
-                
-#                 print(f"DEBUG: Stored in session: {request.session['current_cast_id']}")
-#                 print(f"DEBUG: Session keys: {list(request.session.keys())}")
-                
-#                 # Verify the object was saved
-#                 saved_cast = CareerCast.objects.get(id=career_cast.id)
-#                 print(f"DEBUG: Verified saved CareerCast - ID: {saved_cast.id}")
-                
-#                 return redirect('create_cast_step2')
-                
-#             except Exception as e:
-#                 print(f"DEBUG: Error creating CareerCast: {str(e)}")
-#                 messages.error(request, f'Error creating career cast: {str(e)}')
+#             # Create CareerCast with teleprompter_text field
+#             career_cast = CareerCast.objects.create(
+#                 user=request.user,
+#                 job_title=job_title,
+#                 job_description=job_description,
+#                 teleprompter_text=""  # Set initial empty value or leave it blank
+#             )
+#             request.session['current_cast_id'] = str(career_cast.id)
+#             return redirect('create_cast_step2')
 #         else:
 #             messages.error(request, 'Please fill in all fields')
     
 #     return render(request, 'main_app/step1_job.html')
 
-
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from .models import CareerCast
-
-# # @login_required
-# # def create_cast_step2(request):
-# #     career_cast_id = request.session.get('current_cast_id')
-# #     if not career_cast_id:
-# #         return redirect('create_cast_step1')
+def create_cast_step1(request):
+    """Step 1: Create career cast - job details"""
+    print("DEBUG: Entering create_cast_step1")
     
-# #     career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    if request.method == 'POST':
+        job_title = request.POST.get('job_title')
+        job_description = request.POST.get('job_description')
+        
+        print(f"DEBUG: Form data - job_title: {job_title}, job_description: {job_description}")
+        
+        if job_title and job_description:
+            try:
+                # Create the CareerCast object
+                career_cast = CareerCast.objects.create(
+                    user=request.user,
+                    job_title=job_title,
+                    job_description=job_description,
+                    teleprompter_text=""
+                )
+                
+                print(f"DEBUG: Successfully created CareerCast - ID: {career_cast.id}, Type: {type(career_cast.id)}")
+                
+                # Store UUID as string in session
+                request.session['current_cast_id'] = str(career_cast.id)
+                request.session.modified = True  # Ensure session is saved
+                
+                print(f"DEBUG: Stored in session: {request.session['current_cast_id']}")
+                print(f"DEBUG: Session keys: {list(request.session.keys())}")
+                
+                # Verify the object was saved
+                saved_cast = CareerCast.objects.get(id=career_cast.id)
+                print(f"DEBUG: Verified saved CareerCast - ID: {saved_cast.id}")
+                
+                return redirect('create_cast_step2')
+                
+            except Exception as e:
+                print(f"DEBUG: Error creating CareerCast: {str(e)}")
+                messages.error(request, f'Error creating career cast: {str(e)}')
+        else:
+            messages.error(request, 'Please fill in all fields')
     
-# #     if request.method == 'POST':
-# #         resume_file = request.FILES.get('resume_file')
-# #         if resume_file:
-# #             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
-# #             file_extension = os.path.splitext(resume_file.name)[1].lower()
-            
-# #             if file_extension not in allowed_extensions:
-# #                 messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
-# #                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-            
-# #             if resume_file.size > 5 * 1024 * 1024:
-# #                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
-# #                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-            
-# #             # ✅ Just save the file — don't generate text here
-# #             career_cast.resume_file = resume_file
-# #             career_cast.teleprompter_text = ""  # clear any stale text
-# #             career_cast.save()
+    return render(request, 'main_app/step1_job.html')
 
-# #             return redirect('create_cast_step3')
-# #         else:
-# #             messages.error(request, 'Please upload a resume file')
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import CareerCast
+
+# @login_required
+# def create_cast_step2(request):
+#     career_cast_id = request.session.get('current_cast_id')
+#     if not career_cast_id:
+#         return redirect('create_cast_step1')
     
-# #     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+#     career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    
+#     if request.method == 'POST':
+#         resume_file = request.FILES.get('resume_file')
+#         if resume_file:
+#             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+#             file_extension = os.path.splitext(resume_file.name)[1].lower()
+            
+#             if file_extension not in allowed_extensions:
+#                 messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
+#                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+#             if resume_file.size > 5 * 1024 * 1024:
+#                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
+#                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+#             # ✅ Just save the file — don't generate text here
+#             career_cast.resume_file = resume_file
+#             career_cast.teleprompter_text = ""  # clear any stale text
+#             career_cast.save()
+
+#             return redirect('create_cast_step3')
+#         else:
+#             messages.error(request, 'Please upload a resume file')
+    
+#     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
 
 # @login_required
 # def create_cast_step2(request):
@@ -583,72 +583,116 @@
     
 #     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
 
-
-
-# from django.contrib.auth.decorators import login_required
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib import messages
-# from .models import CareerCast
-# from .utils import extract_text_from_resume, generate_teleprompter_text
-
-# @login_required
-# def create_cast_step3(request):
-#     career_cast_id = request.session.get('current_cast_id')
-#     if not career_cast_id:
-#         return redirect('create_cast_step1')
-
-#     career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
-
-#     if not career_cast.resume_file:
-#         messages.error(request, 'Please upload your resume first.')
-#         return redirect('create_cast_step2')
-
-#     try:
-#         if not career_cast.teleprompter_text or career_cast.teleprompter_text.strip() == "":
-#             resume_content = extract_text_from_resume(career_cast.resume_file)
-
-#             print("\n--- DEBUG ---")
-#             print("JOB TITLE:", career_cast.job_title)
-#             print("JOB DESCRIPTION:", career_cast.job_description[:200])
-#             print("RESUME CONTENT (first 500):", resume_content[:500])
-#             print("--------------\n")
-
-#             teleprompter_text = generate_teleprompter_text(
-#                 career_cast.job_title,
-#                 career_cast.job_description,
-#                 resume_content
-#             )
-#             career_cast.teleprompter_text = teleprompter_text
-#             career_cast.save()
-#         else:
-#             teleprompter_text = career_cast.teleprompter_text
-
-#         return render(request, 'main_app/step3_record.html', {
-#             'career_cast': career_cast,
-#             'tele': teleprompter_text
-#         })
-
-#     except Exception as e:
-#         messages.error(request, f"Error generating teleprompter text: {e}")
-#         return redirect('create_cast_step2')
-
-
-
-
-# @login_required
-# def record_view(request):
-#     """Recording studio page"""
-#     career_cast_id = request.session.get('current_cast_id')
-#     if not career_cast_id:
-#         return redirect('create_cast_step1')
+@login_required
+def create_cast_step2(request):
+    career_cast_id = request.session.get('current_cast_id')
+    if not career_cast_id:
+        return redirect('create_cast_step1')
     
-#     career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    try:
+        from uuid import UUID
+        career_cast_uuid = UUID(career_cast_id)
+        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+    except (ValueError, CareerCast.DoesNotExist):
+        messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
     
-#     context = {
-#         'tele': career_cast.teleprompter_text or "Hello! I'm excited to introduce myself for this position.",
-#         'career_cast': career_cast
-#     }
-#     return render(request, 'main_app/record.html', context)
+    if request.method == 'POST':
+        resume_file = request.FILES.get('resume_file')
+        if resume_file:
+            allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+            file_extension = os.path.splitext(resume_file.name)[1].lower()
+            
+            if file_extension not in allowed_extensions:
+                messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
+                return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+            if resume_file.size > 5 * 1024 * 1024:
+                messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
+                return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+            try:
+                # For Vercel - store file in memory
+                career_cast.resume_file.save(resume_file.name, resume_file, save=True)
+                career_cast.teleprompter_text = ""
+                career_cast.save()
+                return redirect('create_cast_step3')
+            except Exception as e:
+                # Fallback: just store the filename
+                career_cast.resume_file.name = resume_file.name
+                career_cast.save()
+                messages.info(request, 'Resume uploaded successfully!')
+                return redirect('create_cast_step3')
+        else:
+            messages.error(request, 'Please upload a resume file')
+    
+    return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+        
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import CareerCast
+from .utils import extract_text_from_resume, generate_teleprompter_text
+
+@login_required
+def create_cast_step3(request):
+    career_cast_id = request.session.get('current_cast_id')
+    if not career_cast_id:
+        return redirect('create_cast_step1')
+
+    career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+
+    if not career_cast.resume_file:
+        messages.error(request, 'Please upload your resume first.')
+        return redirect('create_cast_step2')
+
+    try:
+        if not career_cast.teleprompter_text or career_cast.teleprompter_text.strip() == "":
+            resume_content = extract_text_from_resume(career_cast.resume_file)
+
+            print("\n--- DEBUG ---")
+            print("JOB TITLE:", career_cast.job_title)
+            print("JOB DESCRIPTION:", career_cast.job_description[:200])
+            print("RESUME CONTENT (first 500):", resume_content[:500])
+            print("--------------\n")
+
+            teleprompter_text = generate_teleprompter_text(
+                career_cast.job_title,
+                career_cast.job_description,
+                resume_content
+            )
+            career_cast.teleprompter_text = teleprompter_text
+            career_cast.save()
+        else:
+            teleprompter_text = career_cast.teleprompter_text
+
+        return render(request, 'main_app/step3_record.html', {
+            'career_cast': career_cast,
+            'tele': teleprompter_text
+        })
+
+    except Exception as e:
+        messages.error(request, f"Error generating teleprompter text: {e}")
+        return redirect('create_cast_step2')
+
+
+
+
+@login_required
+def record_view(request):
+    """Recording studio page"""
+    career_cast_id = request.session.get('current_cast_id')
+    if not career_cast_id:
+        return redirect('create_cast_step1')
+    
+    career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    
+    context = {
+        'tele': career_cast.teleprompter_text or "Hello! I'm excited to introduce myself for this position.",
+        'career_cast': career_cast
+    }
+    return render(request, 'main_app/record.html', context)
 
 # @login_required
 # def video_upload(request):
@@ -688,70 +732,126 @@
     
 #     return JsonResponse({'status': 'error', 'message': 'No video file received'}, status=400)
 
-# from django.views.decorators.clickjacking import xframe_options_exempt
-# from django.http import HttpResponse
+@login_required
+def video_upload(request):
+    if request.method == 'POST' and request.FILES.get('video'):
+        try:
+            career_cast_id = request.session.get('current_cast_id')
+            if not career_cast_id:
+                return JsonResponse({'status': 'error', 'message': 'No CareerCast found'}, status=400)
+            
+            from uuid import UUID
+            career_cast_uuid = UUID(career_cast_id)
+            career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+            video_file = request.FILES['video']
+            
+            # Check file type
+            allowed_extensions = ['.webm', '.mp4', '.mov', '.avi']
+            file_extension = os.path.splitext(video_file.name)[1].lower()
+            
+            if file_extension not in allowed_extensions:
+                return JsonResponse({'status': 'error', 'message': 'Invalid video format. Please use WebM, MP4, MOV, or AVI.'}, status=400)
+            
+            # Check file size (50MB limit)
+            if video_file.size > 50 * 1024 * 1024:
+                return JsonResponse({'status': 'error', 'message': 'File size too large. Please upload a video smaller than 50MB.'}, status=400)
+            
+            try:
+                # For Vercel - store file in memory
+                career_cast.video_file.save(video_file.name, video_file, save=True)
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Video uploaded successfully',
+                    'cast_id': str(career_cast.id)
+                })
+            except Exception as e:
+                # Fallback: just store the filename
+                career_cast.video_file.name = video_file.name
+                career_cast.save()
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'Video uploaded successfully',
+                    'cast_id': str(career_cast.id)
+                })
+            
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'No video file received'}, status=400)
+        
 
-# @xframe_options_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.http import HttpResponse
+
+@xframe_options_exempt
+@login_required
+def final_result(request, cast_id):
+    """Display the final result with resume and video"""
+    career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+    print(f"Resume File URL: {career_cast.resume_file.url}")  # Debugging line
+    return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
+
+# from django.http import FileResponse
+# from django.shortcuts import get_object_or_404
+# from django.conf import settings
+# from .models import CareerCast
+# import os
+
 # @login_required
 # def final_result(request, cast_id):
 #     """Display the final result with resume and video"""
 #     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-#     print(f"Resume File URL: {career_cast.resume_file.url}")  # Debugging line
+    
+#     # Serve the resume file directly using FileResponse
+#     if career_cast.resume_file:
+#         resume_file_path = career_cast.resume_file.path  # Get the actual file path
+#         if os.path.exists(resume_file_path):
+#             return FileResponse(open(resume_file_path, 'rb'), content_type='application/pdf')
+#         else:
+#             messages.error(request, 'Resume file not found.')
+    
 #     return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
 
-# # from django.http import FileResponse
-# # from django.shortcuts import get_object_or_404
-# # from django.conf import settings
-# # from .models import CareerCast
-# # import os
-
-# # @login_required
-# # def final_result(request, cast_id):
-# #     """Display the final result with resume and video"""
-# #     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-    
-# #     # Serve the resume file directly using FileResponse
-# #     if career_cast.resume_file:
-# #         resume_file_path = career_cast.resume_file.path  # Get the actual file path
-# #         if os.path.exists(resume_file_path):
-# #             return FileResponse(open(resume_file_path, 'rb'), content_type='application/pdf')
-# #         else:
-# #             messages.error(request, 'Resume file not found.')
-    
-# #     return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
 
 
 
+@login_required
+def download_resume(request, cast_id):
+    """Download the resume file"""
+    career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+    if career_cast.resume_file:
+        try:
+            response = HttpResponse(career_cast.resume_file, content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file.name}"'
+            return response
+        except:
+            messages.error(request, 'Resume file not accessible.')
+            return redirect('final_result', cast_id=cast_id)
+    else:
+        messages.error(request, 'No resume file found')
+        return redirect('final_result', cast_id=cast_id)
 
-# @login_required
-# def download_resume(request, cast_id):
-#     """Download the resume file"""
-#     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-#     if career_cast.resume_file:
-#         response = HttpResponse(career_cast.resume_file, content_type='application/octet-stream')
-#         response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file.name}"'
-#         return response
-#     else:
-#         messages.error(request, 'No resume file found')
-#         return redirect('final_result', cast_id=cast_id)
-
-# @login_required
+@login_required
 def view_video(request, cast_id):
     """View the uploaded video"""
     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
     if career_cast.video_file:
-        response = HttpResponse(career_cast.video_file, content_type='video/mp4')
-        response['Content-Disposition'] = f'inline; filename="{career_cast.video_file.name}"'
-        return response
+        try:
+            response = HttpResponse(career_cast.video_file, content_type='video/mp4')
+            response['Content-Disposition'] = f'inline; filename="{career_cast.video_file.name}"'
+            return response
+        except:
+            messages.error(request, 'Video file not accessible.')
+            return redirect('final_result', cast_id=cast_id)
     else:
         messages.error(request, 'No video file found')
         return redirect('final_result', cast_id=cast_id)
 
-# def logout_view(request):
-#     """Logout the user"""
-#     logout(request)
-#     messages.success(request, 'You have been logged out successfully.')
-#     return redirect('landing')
+def logout_view(request):
+    """Logout the user"""
+    logout(request)
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('landing')
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, FileResponse
@@ -1185,433 +1285,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
 
         raise Exception(f"Error processing DOCX: {str(e)}")
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.http import JsonResponse, HttpResponse
-from django.conf import settings
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.views.decorators.csrf import csrf_exempt
-from .models import CustomUser, CareerCast
-import random
-import os
-from datetime import timedelta
-import uuid
-import msal
-import requests
-from .utils import extract_text_from_resume, generate_teleprompter_text
 
-def generate_otp():
-    return str(random.randint(100000, 999999))
-
-def send_otp_email(email, otp):
-    try:
-        # Simplified email sending - you can replace with your actual email service
-        print(f"OTP for {email}: {otp}")  # For testing
-        return True
-    except:
-        return False
-
-def landing_page(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    return render(request, 'main_app/landing.html')
-
-def auth_page(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-        
-    if request.method == 'POST':
-        if 'signup' in request.POST:
-            email = request.POST.get('email')
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-
-            if password1 != password2:
-                messages.error(request, 'Passwords do not match.')
-                return redirect('auth')
-
-            if CustomUser.objects.filter(email=email).exists():
-                messages.error(request, 'Email already in use.')
-                return redirect('auth')
-
-            user = CustomUser.objects.create_user(
-                username=email,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name
-            )
-
-            otp_code = generate_otp()
-            user.otp = otp_code
-            user.otp_created_at = timezone.now()
-            user.save()
-
-            if send_otp_email(email, otp_code):
-                request.session['email_for_verification'] = email
-                messages.success(request, f'OTP sent to {email}')
-                return redirect('verify_otp')
-            else:
-                messages.error(request, 'Failed to send OTP. Please try again.')
-                return redirect('auth')
-
-        if 'login' in request.POST:
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-            user = authenticate(request, email=email, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('dashboard')
-            else:
-                messages.error(request, 'Invalid email or password.')
-
-    return render(request, 'main_app/auth.html')
-
-def verify_otp(request):
-    if request.user.is_authenticated:
-        return redirect("dashboard")
-
-    email = request.session.get("email_for_verification")
-    if not email:
-        messages.error(request, "Session expired. Please log in again.")
-        return redirect("auth")
-
-    if request.method == "POST":
-        otp_entered = request.POST.get("otp")
-        if not otp_entered:
-            messages.error(request, "Please enter the OTP.")
-            return render(request, "main_app/verify_otp.html", {"email": email})
-
-        try:
-            user = CustomUser.objects.get(email=email)
-            if (user.otp == otp_entered and user.otp_created_at and 
-                timezone.now() <= user.otp_created_at + timedelta(minutes=10)):
-                user.otp = None
-                user.otp_created_at = None
-                user.is_verified = True
-                user.save()
-                login(request, user, backend="main_app.backends.EmailBackend")
-                messages.success(request, "OTP verified successfully!")
-                return redirect("dashboard")
-            messages.error(request, "Invalid or expired OTP. Please try again.")
-        except CustomUser.DoesNotExist:
-            messages.error(request, "User not found. Please register again.")
-            return redirect("auth")
-
-    return render(request, "main_app/verify_otp.html", {"email": email})
-
-@login_required
-def dashboard(request):
-    career_casts = CareerCast.objects.filter(user=request.user).order_by('-created_at')
-    profile_initials = request.user.get_profile_initials()
-    return render(request, 'main_app/dashboard.html', {
-        'career_casts': career_casts,
-        'profile_initials': profile_initials
-    })
-
-@login_required
-def create_cast_step1(request):
-    if request.method == 'POST':
-        job_title = request.POST.get('job_title')
-        job_description = request.POST.get('job_description')
-        
-        if job_title and job_description:
-            try:
-                # Simple direct creation
-                career_cast = CareerCast.objects.create(
-                    user=request.user,
-                    job_title=job_title,
-                    job_description=job_description,
-                    teleprompter_text=""
-                )
-                
-                # Store ID in session immediately
-                request.session['current_cast_id'] = str(career_cast.id)
-                request.session.modified = True
-                
-                # Don't verify - just redirect
-                return redirect('create_cast_step2')
-                
-            except Exception as e:
-                messages.error(request, f'Error creating career cast: {str(e)}')
-        else:
-            messages.error(request, 'Please fill in all fields')
-    
-    return render(request, 'main_app/step1_job.html')
-        
-@login_required
-def create_cast_step2(request):
-    career_cast_id = request.session.get('current_cast_id')
-    
-    if not career_cast_id:
-        messages.error(request, 'Please start by creating a career cast.')
-        return redirect('create_cast_step1')
-    
-    try:
-        from uuid import UUID
-        career_cast_uuid = UUID(career_cast_id)
-        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
-    except (ValueError, CareerCast.DoesNotExist):
-        messages.error(request, 'Career cast not found. Please start over.')
-        return redirect('create_cast_step1')
-    
-    if request.method == 'POST':
-        resume_file = request.FILES.get('resume_file')
-        if resume_file:
-            # Validate file type
-            allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
-            file_extension = os.path.splitext(resume_file.name)[1].lower()
-            
-            if file_extension not in allowed_extensions:
-                messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
-                return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-            
-            if resume_file.size > 5 * 1024 * 1024:
-                messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
-                return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-            
-            try:
-                # Try normal file save
-                career_cast.resume_file = resume_file
-                career_cast.save()
-                
-            except Exception as e:
-                # Fallback: Store as base64
-                import base64
-                resume_content = resume_file.read()
-                encoded_resume = base64.b64encode(resume_content).decode('utf-8')
-                
-                career_cast.resume_content = f"{resume_file.name}|{encoded_resume}"
-                career_cast.resume_file.name = resume_file.name
-                career_cast.save()
-                messages.info(request, 'Resume stored successfully (using fallback storage).')
-            
-            return redirect('create_cast_step3')
-        else:
-            messages.error(request, 'Please upload a resume file')
-    
-    return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-@login_required
-def debug_career_casts(request):
-    """Debug view to see all career casts for current user"""
-    casts = CareerCast.objects.filter(user=request.user)
-    cast_list = []
-    for cast in casts:
-        cast_list.append({
-            'id': str(cast.id),
-            'job_title': cast.job_title,
-            'created_at': cast.created_at.isoformat(),
-            'has_resume': bool(cast.resume_file),
-            'has_video': bool(cast.video_file)
-        })
-    
-    return JsonResponse({
-        'user_id': str(request.user.id),
-        'career_casts': cast_list,
-        'total_count': len(cast_list)
-    })
-
-@login_required
-def create_cast_step3(request):
-    career_cast_id = request.session.get('current_cast_id')
-    
-    if not career_cast_id:
-        messages.error(request, 'Please start by creating a career cast.')
-        return redirect('create_cast_step1')
-    
-    try:
-        career_cast = CareerCast.objects.get(id=career_cast_id, user=request.user)
-    except CareerCast.DoesNotExist:
-        messages.error(request, 'Career cast not found. Please start over.')
-        return redirect('create_cast_step1')
-    
-    if not career_cast.resume_file:
-        messages.error(request, 'Please upload your resume first.')
-        return redirect('create_cast_step2')
-    
-    # Generate teleprompter text
-    if not career_cast.teleprompter_text:
-        try:
-            resume_content = extract_text_from_resume(career_cast.resume_file)
-            teleprompter_text = generate_teleprompter_text(
-                career_cast.job_title,
-                career_cast.job_description,
-                resume_content
-            )
-            career_cast.teleprompter_text = teleprompter_text
-            career_cast.save()
-        except Exception as e:
-            # If generation fails, provide default text
-            career_cast.teleprompter_text = f"Hello! I'm excited to apply for the {career_cast.job_title} position. My background and experience make me a great fit for this role."
-            career_cast.save()
-    
-    return render(request, 'main_app/step3_record.html', {
-        'career_cast': career_cast,
-        'tele': career_cast.teleprompter_text
-    })
-
-@login_required
-def record_view(request):
-    career_cast_id = request.session.get('current_cast_id')
-    
-    if not career_cast_id:
-        messages.error(request, 'Please start by creating a career cast.')
-        return redirect('create_cast_step1')
-    
-    try:
-        career_cast = CareerCast.objects.get(id=career_cast_id, user=request.user)
-    except CareerCast.DoesNotExist:
-        messages.error(request, 'Career cast not found. Please start over.')
-        return redirect('create_cast_step1')
-    
-    return render(request, 'main_app/record.html', {
-        'career_cast': career_cast,
-        'tele': career_cast.teleprompter_text or "Ready to record your video."
-    })
-
-@login_required
-def video_upload(request):
-    if request.method == 'POST' and request.FILES.get('video'):
-        career_cast_id = request.session.get('current_cast_id')
-        
-        if not career_cast_id:
-            return JsonResponse({'status': 'error', 'message': 'No career cast found'}, status=400)
-        
-        try:
-            from uuid import UUID
-            career_cast_uuid = UUID(career_cast_id)
-            career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
-            video_file = request.FILES['video']
-            
-            # Validate video file
-            allowed_extensions = ['.webm', '.mp4', '.mov', '.avi']
-            file_extension = os.path.splitext(video_file.name)[1].lower()
-            
-            if file_extension not in allowed_extensions:
-                return JsonResponse({'status': 'error', 'message': 'Invalid video format. Please use WebM, MP4, MOV, or AVI.'}, status=400)
-            
-            if video_file.size > 50 * 1024 * 1024:
-                return JsonResponse({'status': 'error', 'message': 'File size too large. Please upload a video smaller than 50MB.'}, status=400)
-            
-            try:
-                # Method 1: Try to save normally (will fail on Vercel)
-                career_cast.video_file = video_file
-                career_cast.save()
-                
-            except Exception as e:
-                # Method 2: Store file content as base64 in the database
-                import base64
-                video_content = video_file.read()
-                encoded_video = base64.b64encode(video_content).decode('utf-8')
-                
-                # Store the base64 content and filename
-                career_cast.video_content = f"{video_file.name}|{encoded_video}"
-                career_cast.video_file.name = video_file.name  # Store just the filename
-                career_cast.save()
-            
-            return JsonResponse({
-                'status': 'success', 
-                'message': 'Video uploaded successfully!',
-                'cast_id': str(career_cast.id)
-            })
-            
-        except (ValueError, CareerCast.DoesNotExist):
-            return JsonResponse({'status': 'error', 'message': 'Career cast not found.'}, status=400)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Upload failed: {str(e)}'}, status=500)
-    
-    return JsonResponse({'status': 'error', 'message': 'No video file received'}, status=400)
-# Optional: Add this function to upload files to Supabase Storage
-def upload_to_supabase_storage(file, file_path):
-    """
-    Upload file to Supabase Storage
-    You'll need to install: pip install supabase
-    """
-    try:
-        from supabase import create_client
-        import os
-        
-        supabase_url = os.environ.get('SUPABASE_URL')
-        supabase_key = os.environ.get('SUPABASE_KEY')
-        
-        if supabase_url and supabase_key:
-            supabase = create_client(supabase_url, supabase_key)
-            
-            # Upload file
-            result = supabase.storage().from_("resumes").upload(file_path, file.read())
-            
-            if result:
-                # Get public URL
-                public_url = supabase.storage().from_("resumes").get_public_url(file_path)
-                return public_url
-                
-    except Exception as e:
-        print(f"Supabase upload error: {e}")
-    
-    return None
-
-
-@login_required
-def final_result(request, cast_id):
-    try:
-        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
-        return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
-    except CareerCast.DoesNotExist:
-        messages.error(request, 'Career cast not found.')
-        return redirect('dashboard')
-
-@login_required
-def download_resume(request, cast_id):
-    try:
-        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
-        if career_cast.resume_file:
-            response = HttpResponse(career_cast.resume_file, content_type='application/octet-stream')
-            response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file.name}"'
-            return response
-        else:
-            messages.error(request, 'No resume file found')
-            return redirect('final_result', cast_id=cast_id)
-    except CareerCast.DoesNotExist:
-        messages.error(request, 'Career cast not found.')
-        return redirect('dashboard')
-
-@csrf_exempt
-@login_required
-def rewrite_teleprompter(request, cast_id):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-    try:
-        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
-        
-        if not career_cast.resume_file:
-            return JsonResponse({'success': False, 'error': 'No resume file found'}, status=400)
-        
-        resume_content = extract_text_from_resume(career_cast.resume_file)
-        new_text = generate_teleprompter_text(
-            career_cast.job_title,
-            career_cast.job_description,
-            resume_content
-        )
-        career_cast.teleprompter_text = new_text
-        career_cast.save()
-        
-        return JsonResponse({'success': True, 'teleprompter_text': new_text})
-        
-    except CareerCast.DoesNotExist:
-        return JsonResponse({'error': 'Career cast not found'}, status=400)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-def logout_view(request):
-    logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('landing')
 
 
 
