@@ -1376,23 +1376,31 @@ def create_cast_step2(request):
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
             try:
-                # For Vercel deployment, we can't save files locally
-                # Option 1: Convert file to base64 and store in database
+                # Save the file - Django will handle the storage
+                career_cast.resume_file = resume_file
+                career_cast.save()
+                
+                # Verify the file was saved
+                if career_cast.resume_file:
+                    messages.success(request, 'Resume uploaded successfully!')
+                    return redirect('create_cast_step3')
+                else:
+                    messages.error(request, 'Failed to save resume. Please try again.')
+                    
+            except Exception as e:
+                # If file system is read-only, use a fallback approach
+                messages.warning(request, 'File system storage unavailable. Using fallback method.')
+                
+                # Store file content in database as text (base64)
                 import base64
                 file_content = resume_file.read()
                 encoded_content = base64.b64encode(file_content).decode('utf-8')
                 
-                # Store the filename and encoded content
-                career_cast.resume_file = f"{resume_file.name}|{encoded_content}"
+                # Store in a text field (we'll use teleprompter_text temporarily)
+                career_cast.teleprompter_text = f"RESUME_FILE:{resume_file.name}:{encoded_content}"
                 career_cast.save()
                 
-                return redirect('create_cast_step3')
-                
-            except Exception as e:
-                # Option 2: Just store the filename for now
-                career_cast.resume_file = resume_file.name
-                career_cast.save()
-                messages.info(request, 'Resume uploaded (filename stored). File storage will be available in production.')
+                messages.info(request, 'Resume stored using fallback method.')
                 return redirect('create_cast_step3')
                 
         else:
@@ -1572,6 +1580,7 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
 
