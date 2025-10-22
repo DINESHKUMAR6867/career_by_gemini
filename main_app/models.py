@@ -63,12 +63,7 @@ from django.db import models
 import uuid
 import os
 from django.conf import settings
-
-def resume_upload_path(instance, filename):
-    return f'resumes/user_{instance.user.id}/{filename}'
-
-def video_upload_path(instance, filename):
-    return f'videos/user_{instance.user.id}/{filename}'
+import base64
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -108,9 +103,20 @@ class CareerCast(models.Model):
     teleprompter_text = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Use consistent upload paths
-    resume_file = models.FileField(upload_to=resume_upload_path, null=True, blank=True)
-    video_file = models.FileField(upload_to=video_upload_path, null=True, blank=True)
+    # Store file data as text fields (base64 encoded)
+    resume_file_name = models.CharField(max_length=255, null=True, blank=True)
+    resume_file_data = models.TextField(null=True, blank=True)  # base64 encoded file data
+    video_file_name = models.CharField(max_length=255, null=True, blank=True)
+    video_file_data = models.TextField(null=True, blank=True)   # base64 encoded file data
 
     def __str__(self):
         return self.job_title
+
+    # Property to check if files exist
+    @property
+    def has_resume(self):
+        return bool(self.resume_file_data)
+    
+    @property
+    def has_video(self):
+        return bool(self.video_file_data)
