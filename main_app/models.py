@@ -105,10 +105,9 @@ class CareerCast(models.Model):
     job_title = models.CharField(max_length=255)
     job_description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    teleprompter_text = models.TextField(null=True, blank=True) 
+    teleprompter_text = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Use UUID for file upload paths
     resume_file = models.FileField(upload_to=resume_upload_path, null=True, blank=True)
     video_file = models.FileField(upload_to=video_upload_path, null=True, blank=True)
 
