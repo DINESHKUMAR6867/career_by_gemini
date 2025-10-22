@@ -90,7 +90,6 @@ def extract_text_from_docx(file_like):
     except ImportError:
         return "DOCX text extraction not available"
 
-
 def generate_teleprompter_text(job_title, job_description, resume_text):
     """Generate a full 2–3 minute teleprompter script based on resume, job title, and description."""
     try:
@@ -130,5 +129,6 @@ The script should:
 
     except Exception as e:
         return f"Error generating teleprompter text: {e}"
+
 
 
