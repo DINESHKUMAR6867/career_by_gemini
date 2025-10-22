@@ -469,22 +469,50 @@ from .models import CareerCast
 @login_required
 def create_cast_step2(request):
     career_cast_id = request.session.get('current_cast_id')
+    
+    # Debug information
+    print(f"DEBUG: Session career_cast_id = {career_cast_id}")
+    
     if not career_cast_id:
+        messages.error(request, 'Please start by creating a career cast.')
         return redirect('create_cast_step1')
     
     try:
-        # Convert string UUID from session to actual UUID object
+        # Convert string UUID from session to UUID object
         from uuid import UUID
         career_cast_uuid = UUID(career_cast_id)
-        career_cast = get_object_or_404(CareerCast, id=career_cast_uuid, user=request.user)
-    except (ValueError, TypeError) as e:
-        print(f"UUID conversion error: {e}")
-        messages.error(request, 'Invalid session. Please start over.')
+        
+        # Debug
+        print(f"DEBUG: Converted UUID = {career_cast_uuid}")
+        
+        # Get the career cast
+        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+        
+        # Debug success
+        print(f"DEBUG: Found CareerCast - {career_cast.job_title}")
+        
+    except ValueError as e:
+        print(f"DEBUG: Invalid UUID format - {e}")
+        # Clear invalid session and redirect to step1
+        if 'current_cast_id' in request.session:
+            del request.session['current_cast_id']
+        messages.error(request, 'Invalid session. Please create a new career cast.')
         return redirect('create_cast_step1')
+        
     except CareerCast.DoesNotExist:
-        messages.error(request, 'Career cast not found. Please start over.')
+        print(f"DEBUG: CareerCast not found for UUID {career_cast_uuid} and user {request.user}")
+        # Clear invalid session and redirect to step1
+        if 'current_cast_id' in request.session:
+            del request.session['current_cast_id']
+        messages.error(request, 'Career cast not found. Please create a new one.')
+        return redirect('create_cast_step1')
+        
+    except Exception as e:
+        print(f"DEBUG: Unexpected error - {e}")
+        messages.error(request, 'An error occurred. Please try again.')
         return redirect('create_cast_step1')
     
+    # Handle POST request (file upload)
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
         if resume_file:
@@ -499,6 +527,7 @@ def create_cast_step2(request):
                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
+            # Save the resume file
             career_cast.resume_file = resume_file
             career_cast.teleprompter_text = ""  # clear any stale text
             career_cast.save()
@@ -508,7 +537,6 @@ def create_cast_step2(request):
             messages.error(request, 'Please upload a resume file')
     
     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
-
 
 
 
@@ -1112,6 +1140,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
