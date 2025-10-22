@@ -64,12 +64,7 @@ import uuid
 import os
 from django.conf import settings
 
-def resume_upload_path(instance, filename):
-    return f'resumes/user_{instance.user.id}/{filename}'
-
-def video_upload_path(instance, filename):
-    return f'videos/user_{instance.user.id}/{filename}'
-
+# Remove the file upload functions since we'll handle this differently
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
@@ -100,7 +95,7 @@ class CustomUser(AbstractUser):
     )
 
 class CareerCast(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # ADD THIS LINE
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     job_title = models.CharField(max_length=255)
     job_description = models.TextField()
@@ -108,8 +103,9 @@ class CareerCast(models.Model):
     teleprompter_text = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    resume_file = models.FileField(upload_to=resume_upload_path, null=True, blank=True)
-    video_file = models.FileField(upload_to=video_upload_path, null=True, blank=True)
+    # Store file paths as text fields instead of FileField
+    resume_file = models.TextField(null=True, blank=True)  # Store file path or URL
+    video_file = models.TextField(null=True, blank=True)   # Store file path or URL
 
     def __str__(self):
         return self.job_title
