@@ -71,7 +71,6 @@ def video_upload_path(instance, filename):
     return f'videos/user_{instance.user.id}/{filename}'
 
 class CustomUser(AbstractUser):
-    # Use UUID for primary key instead of integer ID
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     otp = models.CharField(max_length=6, blank=True, null=True)
@@ -101,6 +100,7 @@ class CustomUser(AbstractUser):
     )
 
 class CareerCast(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # ADD THIS LINE
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     job_title = models.CharField(max_length=255)
     job_description = models.TextField()
@@ -113,5 +113,3 @@ class CareerCast(models.Model):
 
     def __str__(self):
         return self.job_title
-
-
