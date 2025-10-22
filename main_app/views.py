@@ -385,6 +385,27 @@ from django.contrib import messages
 from .models import CareerCast
 from django.utils import timezone
 
+# def create_cast_step1(request):
+#     """Step 1: Create career cast - job details"""
+#     if request.method == 'POST':
+#         job_title = request.POST.get('job_title')
+#         job_description = request.POST.get('job_description')
+        
+#         if job_title and job_description:
+#             # Create CareerCast with teleprompter_text field
+#             career_cast = CareerCast.objects.create(
+#                 user=request.user,
+#                 job_title=job_title,
+#                 job_description=job_description,
+#                 teleprompter_text=""  # Set initial empty value or leave it blank
+#             )
+#             request.session['current_cast_id'] = str(career_cast.id)
+#             return redirect('create_cast_step2')
+#         else:
+#             messages.error(request, 'Please fill in all fields')
+    
+#     return render(request, 'main_app/step1_job.html')
+
 def create_cast_step1(request):
     """Step 1: Create career cast - job details"""
     if request.method == 'POST':
@@ -392,14 +413,15 @@ def create_cast_step1(request):
         job_description = request.POST.get('job_description')
         
         if job_title and job_description:
-            # Create CareerCast with teleprompter_text field
             career_cast = CareerCast.objects.create(
                 user=request.user,
                 job_title=job_title,
                 job_description=job_description,
-                teleprompter_text=""  # Set initial empty value or leave it blank
+                teleprompter_text=""
             )
+            # Store UUID as string in session
             request.session['current_cast_id'] = str(career_cast.id)
+            print(f"Created CareerCast with ID: {career_cast.id} (type: {type(career_cast.id)})")
             return redirect('create_cast_step2')
         else:
             messages.error(request, 'Please fill in all fields')
@@ -411,13 +433,57 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import CareerCast
 
+# @login_required
+# def create_cast_step2(request):
+#     career_cast_id = request.session.get('current_cast_id')
+#     if not career_cast_id:
+#         return redirect('create_cast_step1')
+    
+#     career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    
+#     if request.method == 'POST':
+#         resume_file = request.FILES.get('resume_file')
+#         if resume_file:
+#             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
+#             file_extension = os.path.splitext(resume_file.name)[1].lower()
+            
+#             if file_extension not in allowed_extensions:
+#                 messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
+#                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+#             if resume_file.size > 5 * 1024 * 1024:
+#                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
+#                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+            
+#             # ✅ Just save the file — don't generate text here
+#             career_cast.resume_file = resume_file
+#             career_cast.teleprompter_text = ""  # clear any stale text
+#             career_cast.save()
+
+#             return redirect('create_cast_step3')
+#         else:
+#             messages.error(request, 'Please upload a resume file')
+    
+#     return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
+
 @login_required
 def create_cast_step2(request):
     career_cast_id = request.session.get('current_cast_id')
     if not career_cast_id:
         return redirect('create_cast_step1')
     
-    career_cast = get_object_or_404(CareerCast, id=career_cast_id, user=request.user)
+    try:
+        # Convert string UUID from session to actual UUID object
+        from uuid import UUID
+        career_cast_uuid = UUID(career_cast_id)
+        career_cast = get_object_or_404(CareerCast, id=career_cast_uuid, user=request.user)
+    except (ValueError, TypeError) as e:
+        print(f"UUID conversion error: {e}")
+        messages.error(request, 'Invalid session. Please start over.')
+        return redirect('create_cast_step1')
+    except CareerCast.DoesNotExist:
+        messages.error(request, 'Career cast not found. Please start over.')
+        return redirect('create_cast_step1')
     
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
@@ -433,7 +499,6 @@ def create_cast_step2(request):
                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
-            # ✅ Just save the file — don't generate text here
             career_cast.resume_file = resume_file
             career_cast.teleprompter_text = ""  # clear any stale text
             career_cast.save()
@@ -1047,6 +1112,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
