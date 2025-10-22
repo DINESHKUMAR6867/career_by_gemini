@@ -64,12 +64,11 @@ import uuid
 import os
 from django.conf import settings
 
-# Simple upload paths - we'll handle actual storage differently
 def resume_upload_path(instance, filename):
-    return f'resumes/{filename}'
+    return f'resumes/user_{instance.user.id}/{filename}'
 
 def video_upload_path(instance, filename):
-    return f'videos/{filename}'
+    return f'videos/user_{instance.user.id}/{filename}'
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -109,13 +108,9 @@ class CareerCast(models.Model):
     teleprompter_text = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Keep FileField but we'll store files in memory or use base64
+    # Use consistent upload paths
     resume_file = models.FileField(upload_to=resume_upload_path, null=True, blank=True)
     video_file = models.FileField(upload_to=video_upload_path, null=True, blank=True)
-    
-    # Add fields to store file content as base64 for Vercel
-    resume_content = models.TextField(null=True, blank=True)  # Store base64 encoded resume
-    video_content = models.TextField(null=True, blank=True)   # Store base64 encoded video
 
     def __str__(self):
         return self.job_title
