@@ -1193,7 +1193,7 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.utils import timezone
 from django.core.mail import send_mail
-from django.views.decorators.csrf import csrf_exempt  # ADD THIS IMPORT
+from django.views.decorators.csrf import csrf_exempt
 from .models import CustomUser, CareerCast
 import json
 import random
@@ -1208,21 +1208,24 @@ def generate_otp():
     return str(random.randint(100000, 999999))
 
 def send_otp_email(email, otp):
-    access_token = get_outlook_access_token()
-    email_data = {
-        "message": {
-            "subject": "Your CareerCast OTP Verification Code",
-            "body": {
-                "contentType": "Text",
-                "content": f"Your OTP verification code is: {otp}\n\nThis code will expire in 10 minutes."
+    try:
+        access_token = get_outlook_access_token()
+        email_data = {
+            "message": {
+                "subject": "Your CareerCast OTP Verification Code",
+                "body": {
+                    "contentType": "Text",
+                    "content": f"Your OTP verification code is: {otp}\n\nThis code will expire in 10 minutes."
+                },
+                "toRecipients": [{"emailAddress": {"address": email}}]
             },
-            "toRecipients": [{"emailAddress": {"address": email}}]
-        },
-        "saveToSentItems": "true"
-    }
-    graph_url = f"https://graph.microsoft.com/v1.0/users/{settings.OUTLOOK_SENDER_EMAIL}/sendMail"
-    response = requests.post(graph_url, headers={'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}, json=email_data)
-    return response.status_code == 202
+            "saveToSentItems": "true"
+        }
+        graph_url = f"https://graph.microsoft.com/v1.0/users/{settings.OUTLOOK_SENDER_EMAIL}/sendMail"
+        response = requests.post(graph_url, headers={'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}, json=email_data)
+        return response.status_code == 202
+    except:
+        return False
 
 def get_outlook_access_token():
     authority = f"https://login.microsoftonline.com/{settings.OUTLOOK_TENANT_ID}"
@@ -1271,10 +1274,13 @@ def auth_page(request):
             user.otp_created_at = timezone.now()
             user.save()
 
-            send_otp_email(email, otp_code)
-            request.session['email_for_verification'] = email
-            messages.success(request, f'OTP sent to {email}')
-            return redirect('verify_otp')
+            if send_otp_email(email, otp_code):
+                request.session['email_for_verification'] = email
+                messages.success(request, f'OTP sent to {email}')
+                return redirect('verify_otp')
+            else:
+                messages.error(request, 'Failed to send OTP. Please try again.')
+                return redirect('auth')
 
         if 'login' in request.POST:
             email = request.POST.get('email')
@@ -1330,20 +1336,34 @@ def dashboard(request):
         'profile_initials': profile_initials
     })
 
+@login_required
 def create_cast_step1(request):
     if request.method == 'POST':
         job_title = request.POST.get('job_title')
         job_description = request.POST.get('job_description')
         
         if job_title and job_description:
-            career_cast = CareerCast.objects.create(
-                user=request.user,
-                job_title=job_title,
-                job_description=job_description,
-                teleprompter_text=""
-            )
-            request.session['current_cast_id'] = str(career_cast.id)
-            return redirect('create_cast_step2')
+            try:
+                # Clear any previous session data
+                if 'current_cast_id' in request.session:
+                    del request.session['current_cast_id']
+                
+                # Create new CareerCast
+                career_cast = CareerCast.objects.create(
+                    user=request.user,
+                    job_title=job_title,
+                    job_description=job_description,
+                    teleprompter_text=""
+                )
+                
+                # Store the ID in session
+                request.session['current_cast_id'] = str(career_cast.id)
+                request.session.modified = True
+                
+                return redirect('create_cast_step2')
+                
+            except Exception as e:
+                messages.error(request, 'Error creating career cast. Please try again.')
         else:
             messages.error(request, 'Please fill in all fields')
     
@@ -1351,11 +1371,15 @@ def create_cast_step1(request):
 
 @login_required
 def create_cast_step2(request):
+    # Get the career cast ID from session
     career_cast_id = request.session.get('current_cast_id')
+    
     if not career_cast_id:
+        messages.error(request, 'Please start by creating a career cast.')
         return redirect('create_cast_step1')
     
     try:
+        # Convert to UUID and get the object
         career_cast_uuid = uuid.UUID(career_cast_id)
         career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
     except (ValueError, CareerCast.DoesNotExist):
@@ -1365,6 +1389,7 @@ def create_cast_step2(request):
     if request.method == 'POST':
         resume_file = request.FILES.get('resume_file')
         if resume_file:
+            # Validate file type
             allowed_extensions = ['.pdf', '.doc', '.docx', '.txt']
             file_extension = os.path.splitext(resume_file.name)[1].lower()
             
@@ -1372,13 +1397,16 @@ def create_cast_step2(request):
                 messages.error(request, 'Please upload a PDF, DOC, DOCX, or TXT file.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
+            # Validate file size (5MB limit)
             if resume_file.size > 5 * 1024 * 1024:
                 messages.error(request, 'File size too large. Please upload a file smaller than 5MB.')
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
+            # Save the file
             career_cast.resume_file = resume_file
             career_cast.teleprompter_text = ""
             career_cast.save()
+            
             return redirect('create_cast_step3')
         else:
             messages.error(request, 'Please upload a resume file')
@@ -1388,22 +1416,25 @@ def create_cast_step2(request):
 @login_required
 def create_cast_step3(request):
     career_cast_id = request.session.get('current_cast_id')
+    
     if not career_cast_id:
+        messages.error(request, 'Please start by creating a career cast.')
         return redirect('create_cast_step1')
-
+    
     try:
         career_cast_uuid = uuid.UUID(career_cast_id)
         career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
     except (ValueError, CareerCast.DoesNotExist):
         messages.error(request, 'Career cast not found. Please start over.')
         return redirect('create_cast_step1')
-
+    
     if not career_cast.resume_file:
         messages.error(request, 'Please upload your resume first.')
         return redirect('create_cast_step2')
-
-    try:
-        if not career_cast.teleprompter_text or career_cast.teleprompter_text.strip() == "":
+    
+    # Generate teleprompter text if not already generated
+    if not career_cast.teleprompter_text:
+        try:
             resume_content = extract_text_from_resume(career_cast.resume_file)
             teleprompter_text = generate_teleprompter_text(
                 career_cast.job_title,
@@ -1412,22 +1443,21 @@ def create_cast_step3(request):
             )
             career_cast.teleprompter_text = teleprompter_text
             career_cast.save()
-        else:
-            teleprompter_text = career_cast.teleprompter_text
-
-        return render(request, 'main_app/step3_record.html', {
-            'career_cast': career_cast,
-            'tele': teleprompter_text
-        })
-
-    except Exception as e:
-        messages.error(request, f"Error generating teleprompter text: {e}")
-        return redirect('create_cast_step2')
+        except Exception as e:
+            messages.error(request, 'Error generating teleprompter text. Please try again.')
+            return redirect('create_cast_step2')
+    
+    return render(request, 'main_app/step3_record.html', {
+        'career_cast': career_cast,
+        'tele': career_cast.teleprompter_text
+    })
 
 @login_required
 def record_view(request):
     career_cast_id = request.session.get('current_cast_id')
+    
     if not career_cast_id:
+        messages.error(request, 'Please start by creating a career cast.')
         return redirect('create_cast_step1')
     
     try:
@@ -1437,24 +1467,25 @@ def record_view(request):
         messages.error(request, 'Career cast not found. Please start over.')
         return redirect('create_cast_step1')
     
-    context = {
-        'tele': career_cast.teleprompter_text or "Hello! I'm excited to introduce myself for this position.",
-        'career_cast': career_cast
-    }
-    return render(request, 'main_app/record.html', context)
+    return render(request, 'main_app/record.html', {
+        'career_cast': career_cast,
+        'tele': career_cast.teleprompter_text or "Ready to record your video."
+    })
 
 @login_required
 def video_upload(request):
     if request.method == 'POST' and request.FILES.get('video'):
+        career_cast_id = request.session.get('current_cast_id')
+        
+        if not career_cast_id:
+            return JsonResponse({'status': 'error', 'message': 'No career cast found'}, status=400)
+        
         try:
-            career_cast_id = request.session.get('current_cast_id')
-            if not career_cast_id:
-                return JsonResponse({'status': 'error', 'message': 'No CareerCast found'}, status=400)
-            
             career_cast_uuid = uuid.UUID(career_cast_id)
             career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
             video_file = request.FILES['video']
             
+            # Validate video file
             allowed_extensions = ['.webm', '.mp4', '.mov', '.avi']
             file_extension = os.path.splitext(video_file.name)[1].lower()
             
@@ -1464,6 +1495,7 @@ def video_upload(request):
             if video_file.size > 50 * 1024 * 1024:
                 return JsonResponse({'status': 'error', 'message': 'File size too large.'}, status=400)
             
+            # Save the video
             career_cast.video_file = video_file
             career_cast.save()
             
@@ -1473,6 +1505,8 @@ def video_upload(request):
                 'cast_id': str(career_cast.id)
             })
             
+        except (ValueError, CareerCast.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Career cast not found.'}, status=400)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
@@ -1481,18 +1515,16 @@ def video_upload(request):
 @login_required
 def final_result(request, cast_id):
     try:
-        career_cast_uuid = uuid.UUID(cast_id)
-        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
         return render(request, 'main_app/final_result.html', {'career_cast': career_cast})
-    except (ValueError, CareerCast.DoesNotExist):
+    except CareerCast.DoesNotExist:
         messages.error(request, 'Career cast not found.')
         return redirect('dashboard')
 
 @login_required
 def download_resume(request, cast_id):
     try:
-        career_cast_uuid = uuid.UUID(cast_id)
-        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
+        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
         if career_cast.resume_file:
             response = HttpResponse(career_cast.resume_file, content_type='application/octet-stream')
             response['Content-Disposition'] = f'attachment; filename="{career_cast.resume_file.name}"'
@@ -1500,7 +1532,7 @@ def download_resume(request, cast_id):
         else:
             messages.error(request, 'No resume file found')
             return redirect('final_result', cast_id=cast_id)
-    except (ValueError, CareerCast.DoesNotExist):
+    except CareerCast.DoesNotExist:
         messages.error(request, 'Career cast not found.')
         return redirect('dashboard')
 
@@ -1511,12 +1543,11 @@ def rewrite_teleprompter(request, cast_id):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
     try:
-        career_cast_uuid = uuid.UUID(cast_id)
-        career_cast = CareerCast.objects.get(id=career_cast_uuid, user=request.user)
-    except (ValueError, CareerCast.DoesNotExist):
-        return JsonResponse({'error': 'Invalid career cast ID'}, status=400)
-
-    try:
+        career_cast = CareerCast.objects.get(id=cast_id, user=request.user)
+        
+        if not career_cast.resume_file:
+            return JsonResponse({'success': False, 'error': 'No resume file found'}, status=400)
+        
         resume_content = extract_text_from_resume(career_cast.resume_file)
         new_text = generate_teleprompter_text(
             career_cast.job_title,
@@ -1525,7 +1556,11 @@ def rewrite_teleprompter(request, cast_id):
         )
         career_cast.teleprompter_text = new_text
         career_cast.save()
+        
         return JsonResponse({'success': True, 'teleprompter_text': new_text})
+        
+    except CareerCast.DoesNotExist:
+        return JsonResponse({'error': 'Career cast not found'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -1536,5 +1571,5 @@ def logout_view(request):
 
 @login_required
 def download_enhanced_resume(request, cast_id):
-    messages.info(request, 'This feature is temporarily unavailable.')
+    messages.info(request, 'Enhanced resume feature coming soon.')
     return redirect('final_result', cast_id=cast_id)
