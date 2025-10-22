@@ -64,7 +64,12 @@ import uuid
 import os
 from django.conf import settings
 
-# Remove the file upload functions since we'll handle this differently
+def resume_upload_path(instance, filename):
+    return f'resumes/user_{instance.user.id}/{filename}'
+
+def video_upload_path(instance, filename):
+    return f'videos/user_{instance.user.id}/{filename}'
+
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
@@ -103,9 +108,9 @@ class CareerCast(models.Model):
     teleprompter_text = models.TextField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Store file paths as text fields instead of FileField
-    resume_file = models.TextField(null=True, blank=True)  # Store file path or URL
-    video_file = models.TextField(null=True, blank=True)   # Store file path or URL
+    # Use FileField but we'll handle storage differently
+    resume_file = models.FileField(upload_to=resume_upload_path, null=True, blank=True)
+    video_file = models.FileField(upload_to=video_upload_path, null=True, blank=True)
 
     def __str__(self):
         return self.job_title
