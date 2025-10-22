@@ -736,16 +736,16 @@
 #         return redirect('final_result', cast_id=cast_id)
 
 # @login_required
-# def view_video(request, cast_id):
-#     """View the uploaded video"""
-#     career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-#     if career_cast.video_file:
-#         response = HttpResponse(career_cast.video_file, content_type='video/mp4')
-#         response['Content-Disposition'] = f'inline; filename="{career_cast.video_file.name}"'
-#         return response
-#     else:
-#         messages.error(request, 'No video file found')
-#         return redirect('final_result', cast_id=cast_id)
+def view_video(request, cast_id):
+    """View the uploaded video"""
+    career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+    if career_cast.video_file:
+        response = HttpResponse(career_cast.video_file, content_type='video/mp4')
+        response['Content-Disposition'] = f'inline; filename="{career_cast.video_file.name}"'
+        return response
+    else:
+        messages.error(request, 'No video file found')
+        return redirect('final_result', cast_id=cast_id)
 
 # def logout_view(request):
 #     """Logout the user"""
@@ -1376,33 +1376,22 @@ def create_cast_step2(request):
                 return render(request, 'main_app/step2_resume.html', {'career_cast': career_cast})
             
             try:
-                # Save the file - Django will handle the storage
+                # Try normal file save
                 career_cast.resume_file = resume_file
                 career_cast.save()
                 
-                # Verify the file was saved
-                if career_cast.resume_file:
-                    messages.success(request, 'Resume uploaded successfully!')
-                    return redirect('create_cast_step3')
-                else:
-                    messages.error(request, 'Failed to save resume. Please try again.')
-                    
             except Exception as e:
-                # If file system is read-only, use a fallback approach
-                messages.warning(request, 'File system storage unavailable. Using fallback method.')
-                
-                # Store file content in database as text (base64)
+                # Fallback: Store as base64
                 import base64
-                file_content = resume_file.read()
-                encoded_content = base64.b64encode(file_content).decode('utf-8')
+                resume_content = resume_file.read()
+                encoded_resume = base64.b64encode(resume_content).decode('utf-8')
                 
-                # Store in a text field (we'll use teleprompter_text temporarily)
-                career_cast.teleprompter_text = f"RESUME_FILE:{resume_file.name}:{encoded_content}"
+                career_cast.resume_content = f"{resume_file.name}|{encoded_resume}"
+                career_cast.resume_file.name = resume_file.name
                 career_cast.save()
-                
-                messages.info(request, 'Resume stored using fallback method.')
-                return redirect('create_cast_step3')
-                
+                messages.info(request, 'Resume stored successfully (using fallback storage).')
+            
+            return redirect('create_cast_step3')
         else:
             messages.error(request, 'Please upload a resume file')
     
@@ -1504,41 +1493,39 @@ def video_upload(request):
             file_extension = os.path.splitext(video_file.name)[1].lower()
             
             if file_extension not in allowed_extensions:
-                return JsonResponse({'status': 'error', 'message': 'Invalid video format.'}, status=400)
+                return JsonResponse({'status': 'error', 'message': 'Invalid video format. Please use WebM, MP4, MOV, or AVI.'}, status=400)
             
             if video_file.size > 50 * 1024 * 1024:
-                return JsonResponse({'status': 'error', 'message': 'File size too large.'}, status=400)
+                return JsonResponse({'status': 'error', 'message': 'File size too large. Please upload a video smaller than 50MB.'}, status=400)
             
             try:
-                # Try to save the video file normally
+                # Method 1: Try to save normally (will fail on Vercel)
                 career_cast.video_file = video_file
                 career_cast.save()
                 
-                return JsonResponse({
-                    'status': 'success', 
-                    'message': 'Video uploaded successfully',
-                    'cast_id': str(career_cast.id)
-                })
-                
             except Exception as e:
-                # Fallback: Store video info without the actual file
-                career_cast.video_file.name = video_file.name  # Just store the filename
-                career_cast.save()
+                # Method 2: Store file content as base64 in the database
+                import base64
+                video_content = video_file.read()
+                encoded_video = base64.b64encode(video_content).decode('utf-8')
                 
-                return JsonResponse({
-                    'status': 'success', 
-                    'message': 'Video info stored (file storage unavailable)',
-                    'cast_id': str(career_cast.id)
-                })
+                # Store the base64 content and filename
+                career_cast.video_content = f"{video_file.name}|{encoded_video}"
+                career_cast.video_file.name = video_file.name  # Store just the filename
+                career_cast.save()
+            
+            return JsonResponse({
+                'status': 'success', 
+                'message': 'Video uploaded successfully!',
+                'cast_id': str(career_cast.id)
+            })
             
         except (ValueError, CareerCast.DoesNotExist):
             return JsonResponse({'status': 'error', 'message': 'Career cast not found.'}, status=400)
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            return JsonResponse({'status': 'error', 'message': f'Upload failed: {str(e)}'}, status=500)
     
     return JsonResponse({'status': 'error', 'message': 'No video file received'}, status=400)
-
-
 # Optional: Add this function to upload files to Supabase Storage
 def upload_to_supabase_storage(file, file_path):
     """
@@ -1625,6 +1612,7 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
 
