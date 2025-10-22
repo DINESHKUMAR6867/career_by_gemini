@@ -753,437 +753,437 @@
 #     messages.success(request, 'You have been logged out successfully.')
 #     return redirect('landing')
 
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.http import HttpResponse, FileResponse
-# from django.contrib import messages
-# from django.conf import settings
-# import os
-# import tempfile
-# from io import BytesIO
-# import traceback
-# import shutil
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, FileResponse
+from django.contrib import messages
+from django.conf import settings
+import os
+import tempfile
+from io import BytesIO
+import traceback
+import shutil
 
-# def download_enhanced_resume(request, cast_id):
-#     """
-#     Download resume with clickable Play Video button
-#     """
-#     print(f"=== DOWNLOAD REQUEST STARTED ===")
-#     print(f"Cast ID: {cast_id}")
-#     print(f"User: {request.user}")
+def download_enhanced_resume(request, cast_id):
+    """
+    Download resume with clickable Play Video button
+    """
+    print(f"=== DOWNLOAD REQUEST STARTED ===")
+    print(f"Cast ID: {cast_id}")
+    print(f"User: {request.user}")
     
-#     try:
-#         career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
-#         print(f"CareerCast found: {career_cast.id}")
+    try:
+        career_cast = get_object_or_404(CareerCast, id=cast_id, user=request.user)
+        print(f"CareerCast found: {career_cast.id}")
         
-#         if not career_cast.resume_file:
-#             print("ERROR: No resume file attached")
-#             messages.error(request, 'No resume file found.')
-#             return redirect('final_result', cast_id=cast_id)
+        if not career_cast.resume_file:
+            print("ERROR: No resume file attached")
+            messages.error(request, 'No resume file found.')
+            return redirect('final_result', cast_id=cast_id)
         
-#         # Get file info
-#         resume_path = career_cast.resume_file.path
-#         file_extension = os.path.splitext(resume_path)[1].lower()
-#         original_filename = career_cast.resume_file.name
+        # Get file info
+        resume_path = career_cast.resume_file.path
+        file_extension = os.path.splitext(resume_path)[1].lower()
+        original_filename = career_cast.resume_file.name
         
-#         print(f"Resume path: {resume_path}")
-#         print(f"File exists: {os.path.exists(resume_path)}")
-#         print(f"File extension: {file_extension}")
-#         print(f"Original filename: {original_filename}")
+        print(f"Resume path: {resume_path}")
+        print(f"File exists: {os.path.exists(resume_path)}")
+        print(f"File extension: {file_extension}")
+        print(f"Original filename: {original_filename}")
         
-#         # Check if file exists
-#         if not os.path.exists(resume_path):
-#             print(f"ERROR: File does not exist at path: {resume_path}")
-#             messages.error(request, 'Resume file not found on server.')
-#             return redirect('final_result', cast_id=cast_id)
+        # Check if file exists
+        if not os.path.exists(resume_path):
+            print(f"ERROR: File does not exist at path: {resume_path}")
+            messages.error(request, 'Resume file not found on server.')
+            return redirect('final_result', cast_id=cast_id)
         
-#         # Generate URL for button
-#         final_result_url = request.build_absolute_uri(f'/final-result/{cast_id}/')
-#         print(f"Final result URL: {final_result_url}")
+        # Generate URL for button
+        final_result_url = request.build_absolute_uri(f'/final-result/{cast_id}/')
+        print(f"Final result URL: {final_result_url}")
         
-#         # Process based on file type - CALL THE ACTUAL FUNCTIONS
-#         if file_extension == '.pdf':
-#             print("Processing as PDF file with button")
-#             modified_file_path = add_play_video_button_to_pdf_with_image(resume_path, original_filename, final_result_url)
-#             content_type = 'application/pdf'
-#             download_filename = f"enhanced_{original_filename}"
+        # Process based on file type - CALL THE ACTUAL FUNCTIONS
+        if file_extension == '.pdf':
+            print("Processing as PDF file with button")
+            modified_file_path = add_play_video_button_to_pdf_with_image(resume_path, original_filename, final_result_url)
+            content_type = 'application/pdf'
+            download_filename = f"enhanced_{original_filename}"
             
-#         elif file_extension in ['.docx', '.doc']:
-#             print("Processing as DOCX file with button")
-#             modified_file_path = add_play_video_button_to_docx_with_image(resume_path, original_filename, final_result_url)
-#             content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-#             download_filename = f"enhanced_{original_filename}"
+        elif file_extension in ['.docx', '.doc']:
+            print("Processing as DOCX file with button")
+            modified_file_path = add_play_video_button_to_docx_with_image(resume_path, original_filename, final_result_url)
+            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            download_filename = f"enhanced_{original_filename}"
             
-#         else:
-#             print(f"Unsupported file type, returning original: {file_extension}")
-#             # Return original file for unsupported types
-#             return FileResponse(
-#                 open(resume_path, 'rb'),
-#                 as_attachment=True,
-#                 filename=original_filename
-#             )
+        else:
+            print(f"Unsupported file type, returning original: {file_extension}")
+            # Return original file for unsupported types
+            return FileResponse(
+                open(resume_path, 'rb'),
+                as_attachment=True,
+                filename=original_filename
+            )
         
-#         # Check if modified file was created
-#         if not os.path.exists(modified_file_path):
-#             print(f"ERROR: Modified file not created at: {modified_file_path}")
-#             messages.error(request, 'Failed to create enhanced resume.')
-#             return redirect('final_result', cast_id=cast_id)
+        # Check if modified file was created
+        if not os.path.exists(modified_file_path):
+            print(f"ERROR: Modified file not created at: {modified_file_path}")
+            messages.error(request, 'Failed to create enhanced resume.')
+            return redirect('final_result', cast_id=cast_id)
         
-#         print(f"SUCCESS: Enhanced resume created at: {modified_file_path}")
-#         print(f"File size: {os.path.getsize(modified_file_path)} bytes")
+        print(f"SUCCESS: Enhanced resume created at: {modified_file_path}")
+        print(f"File size: {os.path.getsize(modified_file_path)} bytes")
         
-#         # Return the modified file
-#         response = FileResponse(
-#             open(modified_file_path, 'rb'),
-#             as_attachment=True,
-#             filename=download_filename
-#         )
-#         response['Content-Type'] = content_type
+        # Return the modified file
+        response = FileResponse(
+            open(modified_file_path, 'rb'),
+            as_attachment=True,
+            filename=download_filename
+        )
+        response['Content-Type'] = content_type
         
-#         print("=== DOWNLOAD RESPONSE SENT ===")
-#         return response
+        print("=== DOWNLOAD RESPONSE SENT ===")
+        return response
             
-#     except Exception as e:
-#         print(f"=== CRITICAL ERROR ===")
-#         print(f"Error: {str(e)}")
-#         print(traceback.format_exc())
-#         messages.error(request, f'Download failed: {str(e)}')
-#         return redirect('final_result', cast_id=cast_id)
+    except Exception as e:
+        print(f"=== CRITICAL ERROR ===")
+        print(f"Error: {str(e)}")
+        print(traceback.format_exc())
+        messages.error(request, f'Download failed: {str(e)}')
+        return redirect('final_result', cast_id=cast_id)
 
-# def add_play_video_button_to_pdf_with_image(original_pdf_path, original_filename, final_result_url):
-#     """
-#     Add Play Video button using static image at top-right corner
-#     """
-#     try:
-#         from PyPDF2 import PdfReader, PdfWriter
-#         from reportlab.lib.pagesizes import letter
-#         from reportlab.pdfgen import canvas
-#         from reportlab.lib.utils import ImageReader
-#         from PyPDF2.generic import DictionaryObject, ArrayObject, FloatObject, NameObject, TextStringObject
+def add_play_video_button_to_pdf_with_image(original_pdf_path, original_filename, final_result_url):
+    """
+    Add Play Video button using static image at top-right corner
+    """
+    try:
+        from PyPDF2 import PdfReader, PdfWriter
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        from PyPDF2.generic import DictionaryObject, ArrayObject, FloatObject, NameObject, TextStringObject
         
-#         print("Starting PDF processing with static image button...")
+        print("Starting PDF processing with static image button...")
         
-#         # Create a temporary file for the modified PDF
-#         temp_dir = tempfile.gettempdir()
-#         safe_filename = f"enhanced_{os.path.basename(original_pdf_path)}"
-#         modified_pdf_path = os.path.join(temp_dir, safe_filename)
+        # Create a temporary file for the modified PDF
+        temp_dir = tempfile.gettempdir()
+        safe_filename = f"enhanced_{os.path.basename(original_pdf_path)}"
+        modified_pdf_path = os.path.join(temp_dir, safe_filename)
         
-#         # Ensure original file exists
-#         if not os.path.exists(original_pdf_path):
-#             raise Exception(f"Original PDF file not found: {original_pdf_path}")
+        # Ensure original file exists
+        if not os.path.exists(original_pdf_path):
+            raise Exception(f"Original PDF file not found: {original_pdf_path}")
         
-#         # CORRECTED: Your image path
-#         button_image_path = os.path.join(settings.BASE_DIR, 'career_cast', 'main_app', 'static', 'main_app', 'images', 'play_video_button.png')
+        # CORRECTED: Your image path
+        button_image_path = os.path.join(settings.BASE_DIR, 'career_cast', 'main_app', 'static', 'main_app', 'images', 'play_video_button.png')
         
-#         print(f"Looking for button image at: {button_image_path}")
+        print(f"Looking for button image at: {button_image_path}")
         
-#         # Check if button image exists
-#         if not os.path.exists(button_image_path):
-#             print("Button image not found at primary path, trying alternatives...")
-#             # Try alternative paths
-#             alternative_paths = [
-#                 os.path.join(settings.BASE_DIR, 'static', 'main_app', 'images', 'play_video_button.png'),
-#                 os.path.join(settings.BASE_DIR, 'main_app', 'static', 'main_app', 'images', 'play_video_button.png'),
-#                 os.path.join(settings.BASE_DIR, 'static', 'images', 'play_video_button.png'),
-#                 os.path.join(settings.BASE_DIR, 'main_app', 'static', 'images', 'play_video_button.png'),
-#             ]
+        # Check if button image exists
+        if not os.path.exists(button_image_path):
+            print("Button image not found at primary path, trying alternatives...")
+            # Try alternative paths
+            alternative_paths = [
+                os.path.join(settings.BASE_DIR, 'static', 'main_app', 'images', 'play_video_button.png'),
+                os.path.join(settings.BASE_DIR, 'main_app', 'static', 'main_app', 'images', 'play_video_button.png'),
+                os.path.join(settings.BASE_DIR, 'static', 'images', 'play_video_button.png'),
+                os.path.join(settings.BASE_DIR, 'main_app', 'static', 'images', 'play_video_button.png'),
+            ]
             
-#             for alt_path in alternative_paths:
-#                 if os.path.exists(alt_path):
-#                     button_image_path = alt_path
-#                     print(f"Found button image at: {button_image_path}")
-#                     break
-#             else:
-#                 # If no image found, create a simple button programmatically
-#                 print("No button image found, creating programmatic button...")
-#                 return add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url)
+            for alt_path in alternative_paths:
+                if os.path.exists(alt_path):
+                    button_image_path = alt_path
+                    print(f"Found button image at: {button_image_path}")
+                    break
+            else:
+                # If no image found, create a simple button programmatically
+                print("No button image found, creating programmatic button...")
+                return add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url)
         
-#         print(f"Button image found at: {button_image_path}")
+        print(f"Button image found at: {button_image_path}")
         
-#         # Read original PDF
-#         print("Reading original PDF...")
-#         original_pdf = PdfReader(original_pdf_path)
-#         if len(original_pdf.pages) == 0:
-#             raise Exception("PDF file has no pages")
+        # Read original PDF
+        print("Reading original PDF...")
+        original_pdf = PdfReader(original_pdf_path)
+        if len(original_pdf.pages) == 0:
+            raise Exception("PDF file has no pages")
         
-#         first_page = original_pdf.pages[0]
-#         media_box = first_page.mediabox
+        first_page = original_pdf.pages[0]
+        media_box = first_page.mediabox
         
-#         # Get page dimensions
-#         page_width = float(media_box.width)
-#         page_height = float(media_box.height)
+        # Get page dimensions
+        page_width = float(media_box.width)
+        page_height = float(media_box.height)
         
-#         print(f"Page dimensions: {page_width}x{page_height}")
+        print(f"Page dimensions: {page_width}x{page_height}")
         
-#         # Button dimensions (from your image)
-#         button_width = 85   # Exact width from image
-#         button_height = 30  # Exact height from image
-#         margin_right = 20   # 30px from right edge
-#         margin_top = 15     # 30px from top edge
+        # Button dimensions (from your image)
+        button_width = 85   # Exact width from image
+        button_height = 30  # Exact height from image
+        margin_right = 20   # 30px from right edge
+        margin_top = 15     # 30px from top edge
         
-#         # Calculate button position (top-right corner)
-#         x_pos = page_width - button_width - margin_right
-#         y_pos = page_height - button_height - margin_top
+        # Calculate button position (top-right corner)
+        x_pos = page_width - button_width - margin_right
+        y_pos = page_height - button_height - margin_top
         
-#         print(f"Button position: ({x_pos}, {y_pos})")
+        print(f"Button position: ({x_pos}, {y_pos})")
         
-#         # Create overlay with image button
-#         packet = BytesIO()
-#         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
+        # Create overlay with image button
+        packet = BytesIO()
+        c = canvas.Canvas(packet, pagesize=(page_width, page_height))
         
-#         # Add the button image
-#         try:
-#             img = ImageReader(button_image_path)
-#             c.drawImage(img, x_pos, y_pos, width=button_width, height=button_height, mask='auto')
-#             print("Button image added successfully")
-#         except Exception as img_error:
-#             print(f"Image error: {img_error}. Creating fallback button...")
-#             # Fallback to programmatic button
-#             return add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url)
+        # Add the button image
+        try:
+            img = ImageReader(button_image_path)
+            c.drawImage(img, x_pos, y_pos, width=button_width, height=button_height, mask='auto')
+            print("Button image added successfully")
+        except Exception as img_error:
+            print(f"Image error: {img_error}. Creating fallback button...")
+            # Fallback to programmatic button
+            return add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url)
         
-#         c.save()
+        c.save()
         
-#         # Merge with original PDF
-#         print("Merging button with original PDF...")
-#         packet.seek(0)
-#         overlay_pdf = PdfReader(packet)
-#         output = PdfWriter()
+        # Merge with original PDF
+        print("Merging button with original PDF...")
+        packet.seek(0)
+        overlay_pdf = PdfReader(packet)
+        output = PdfWriter()
         
-#         # Process first page with overlay
-#         first_page.merge_page(overlay_pdf.pages[0])
+        # Process first page with overlay
+        first_page.merge_page(overlay_pdf.pages[0])
         
-#         # Add clickable annotation
-#         try:
-#             llx = FloatObject(x_pos)
-#             lly = FloatObject(y_pos)
-#             urx = FloatObject(x_pos + button_width)
-#             ury = FloatObject(y_pos + button_height)
+        # Add clickable annotation
+        try:
+            llx = FloatObject(x_pos)
+            lly = FloatObject(y_pos)
+            urx = FloatObject(x_pos + button_width)
+            ury = FloatObject(y_pos + button_height)
             
-#             annotation = DictionaryObject({
-#                 NameObject("/Type"): NameObject("/Annot"),
-#                 NameObject("/Subtype"): NameObject("/Link"),
-#                 NameObject("/Rect"): ArrayObject([llx, lly, urx, ury]),
-#                 NameObject("/Border"): ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)]),
-#                 NameObject("/A"): DictionaryObject({
-#                     NameObject("/S"): NameObject("/URI"),
-#                     NameObject("/URI"): TextStringObject(final_result_url)
-#                 }),
-#                 NameObject("/F"): FloatObject(4),
-#             })
+            annotation = DictionaryObject({
+                NameObject("/Type"): NameObject("/Annot"),
+                NameObject("/Subtype"): NameObject("/Link"),
+                NameObject("/Rect"): ArrayObject([llx, lly, urx, ury]),
+                NameObject("/Border"): ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)]),
+                NameObject("/A"): DictionaryObject({
+                    NameObject("/S"): NameObject("/URI"),
+                    NameObject("/URI"): TextStringObject(final_result_url)
+                }),
+                NameObject("/F"): FloatObject(4),
+            })
             
-#             if "/Annots" in first_page:
-#                 first_page[NameObject("/Annots")].append(annotation)
-#             else:
-#                 first_page[NameObject("/Annots")] = ArrayObject([annotation])
+            if "/Annots" in first_page:
+                first_page[NameObject("/Annots")].append(annotation)
+            else:
+                first_page[NameObject("/Annots")] = ArrayObject([annotation])
                 
-#             print("Added clickable annotation to PDF")
+            print("Added clickable annotation to PDF")
                 
-#         except Exception as annotation_error:
-#             print(f"PDF Annotation error: {annotation_error}")
+        except Exception as annotation_error:
+            print(f"PDF Annotation error: {annotation_error}")
         
-#         output.add_page(first_page)
+        output.add_page(first_page)
         
-#         # Add remaining pages without modification
-#         for page_num in range(1, len(original_pdf.pages)):
-#             output.add_page(original_pdf.pages[page_num])
+        # Add remaining pages without modification
+        for page_num in range(1, len(original_pdf.pages)):
+            output.add_page(original_pdf.pages[page_num])
         
-#         # Save modified PDF
-#         print(f"Saving enhanced PDF to: {modified_pdf_path}")
-#         with open(modified_pdf_path, "wb") as output_file:
-#             output.write(output_file)
+        # Save modified PDF
+        print(f"Saving enhanced PDF to: {modified_pdf_path}")
+        with open(modified_pdf_path, "wb") as output_file:
+            output.write(output_file)
         
-#         print("PDF enhancement with image button completed successfully")
-#         return modified_pdf_path
+        print("PDF enhancement with image button completed successfully")
+        return modified_pdf_path
         
-#     except ImportError as e:
-#         raise Exception(f"Required packages not installed: {e}. Install with: pip install PyPDF2 reportlab")
-#     except Exception as e:
-#         raise Exception(f"Error processing PDF: {str(e)}")
+    except ImportError as e:
+        raise Exception(f"Required packages not installed: {e}. Install with: pip install PyPDF2 reportlab")
+    except Exception as e:
+        raise Exception(f"Error processing PDF: {str(e)}")
 
-# def add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url):
-#     """
-#     Create button programmatically if image is not found
-#     """
-#     try:
-#         from PyPDF2 import PdfReader, PdfWriter
-#         from reportlab.lib.pagesizes import letter
-#         from reportlab.pdfgen import canvas
-#         from reportlab.lib.colors import HexColor
-#         from PyPDF2.generic import DictionaryObject, ArrayObject, FloatObject, NameObject, TextStringObject
+def add_play_video_button_programmatic(original_pdf_path, original_filename, final_result_url):
+    """
+    Create button programmatically if image is not found
+    """
+    try:
+        from PyPDF2 import PdfReader, PdfWriter
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.colors import HexColor
+        from PyPDF2.generic import DictionaryObject, ArrayObject, FloatObject, NameObject, TextStringObject
         
-#         print("Creating programmatic button...")
+        print("Creating programmatic button...")
         
-#         # Create a temporary file for the modified PDF
-#         temp_dir = tempfile.gettempdir()
-#         safe_filename = f"enhanced_{os.path.basename(original_pdf_path)}"
-#         modified_pdf_path = os.path.join(temp_dir, safe_filename)
+        # Create a temporary file for the modified PDF
+        temp_dir = tempfile.gettempdir()
+        safe_filename = f"enhanced_{os.path.basename(original_pdf_path)}"
+        modified_pdf_path = os.path.join(temp_dir, safe_filename)
         
-#         # Read original PDF
-#         original_pdf = PdfReader(original_pdf_path)
-#         first_page = original_pdf.pages[0]
-#         media_box = first_page.mediabox
+        # Read original PDF
+        original_pdf = PdfReader(original_pdf_path)
+        first_page = original_pdf.pages[0]
+        media_box = first_page.mediabox
         
-#         # Get page dimensions
-#         page_width = float(media_box.width)
-#         page_height = float(media_box.height)
+        # Get page dimensions
+        page_width = float(media_box.width)
+        page_height = float(media_box.height)
         
-#         # Button dimensions
-#         button_width = 85
-#         button_height = 25
-#         margin_right = 30
-#         margin_top = 30
+        # Button dimensions
+        button_width = 85
+        button_height = 25
+        margin_right = 30
+        margin_top = 30
         
-#         # Calculate button position
-#         x_pos = page_width - button_width - margin_right
-#         y_pos = page_height - button_height - margin_top
+        # Calculate button position
+        x_pos = page_width - button_width - margin_right
+        y_pos = page_height - button_height - margin_top
         
-#         # Create overlay
-#         packet = BytesIO()
-#         c = canvas.Canvas(packet, pagesize=(page_width, page_height))
+        # Create overlay
+        packet = BytesIO()
+        c = canvas.Canvas(packet, pagesize=(page_width, page_height))
         
-#         # Create exact button matching your image
-#         # Main background (light blue)
-#         c.setFillColor(HexColor("#4DABF5"))
-#         c.rect(x_pos, y_pos, button_width, button_height, fill=True, stroke=False)
+        # Create exact button matching your image
+        # Main background (light blue)
+        c.setFillColor(HexColor("#4DABF5"))
+        c.rect(x_pos, y_pos, button_width, button_height, fill=True, stroke=False)
         
-#         # Darker bottom for gradient effect
-#         c.setFillColor(HexColor("#1971C2"))
-#         c.rect(x_pos, y_pos, button_width, button_height * 0.4, fill=True, stroke=False)
+        # Darker bottom for gradient effect
+        c.setFillColor(HexColor("#1971C2"))
+        c.rect(x_pos, y_pos, button_width, button_height * 0.4, fill=True, stroke=False)
         
-#         # Border
-#         c.setStrokeColor(HexColor("#1864AB"))
-#         c.setLineWidth(0.8)
-#         c.rect(x_pos, y_pos, button_width, button_height, fill=False, stroke=True)
+        # Border
+        c.setStrokeColor(HexColor("#1864AB"))
+        c.setLineWidth(0.8)
+        c.rect(x_pos, y_pos, button_width, button_height, fill=False, stroke=True)
         
-#         # Play icon (white triangle)
-#         c.setFillColor(HexColor("#FFFFFF"))
-#         play_x = x_pos + 8
-#         play_y = y_pos + button_height / 2
+        # Play icon (white triangle)
+        c.setFillColor(HexColor("#FFFFFF"))
+        play_x = x_pos + 8
+        play_y = y_pos + button_height / 2
         
-#         # Draw play triangle
-#         p = c.beginPath()
-#         p.moveTo(play_x, play_y - 4)
-#         p.lineTo(play_x, play_y + 4)
-#         p.lineTo(play_x + 6, play_y)
-#         p.close()
-#         c.drawPath(p, fill=1, stroke=0)
+        # Draw play triangle
+        p = c.beginPath()
+        p.moveTo(play_x, play_y - 4)
+        p.lineTo(play_x, play_y + 4)
+        p.lineTo(play_x + 6, play_y)
+        p.close()
+        c.drawPath(p, fill=1, stroke=0)
         
-#         # Text
-#         c.setFillColor(HexColor("#FFFFFF"))
-#         c.setFont("Helvetica-Bold", 7)
-#         text_x = x_pos + 20
-#         text_y = y_pos + (button_height - 7) / 2 + 4
-#         c.drawString(text_x, text_y, "Play Video")
+        # Text
+        c.setFillColor(HexColor("#FFFFFF"))
+        c.setFont("Helvetica-Bold", 7)
+        text_x = x_pos + 20
+        text_y = y_pos + (button_height - 7) / 2 + 4
+        c.drawString(text_x, text_y, "Play Video")
         
-#         c.save()
+        c.save()
         
-#         # Merge with original PDF
-#         packet.seek(0)
-#         overlay_pdf = PdfReader(packet)
-#         output = PdfWriter()
+        # Merge with original PDF
+        packet.seek(0)
+        overlay_pdf = PdfReader(packet)
+        output = PdfWriter()
         
-#         first_page.merge_page(overlay_pdf.pages[0])
+        first_page.merge_page(overlay_pdf.pages[0])
         
-#         # Add clickable annotation
-#         llx = FloatObject(x_pos)
-#         lly = FloatObject(y_pos)
-#         urx = FloatObject(x_pos + button_width)
-#         ury = FloatObject(y_pos + button_height)
+        # Add clickable annotation
+        llx = FloatObject(x_pos)
+        lly = FloatObject(y_pos)
+        urx = FloatObject(x_pos + button_width)
+        ury = FloatObject(y_pos + button_height)
         
-#         annotation = DictionaryObject({
-#             NameObject("/Type"): NameObject("/Annot"),
-#             NameObject("/Subtype"): NameObject("/Link"),
-#             NameObject("/Rect"): ArrayObject([llx, lly, urx, ury]),
-#             NameObject("/Border"): ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)]),
-#             NameObject("/A"): DictionaryObject({
-#                 NameObject("/S"): NameObject("/URI"),
-#                 NameObject("/URI"): TextStringObject(final_result_url)
-#             }),
-#             NameObject("/F"): FloatObject(4),
-#         })
+        annotation = DictionaryObject({
+            NameObject("/Type"): NameObject("/Annot"),
+            NameObject("/Subtype"): NameObject("/Link"),
+            NameObject("/Rect"): ArrayObject([llx, lly, urx, ury]),
+            NameObject("/Border"): ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)]),
+            NameObject("/A"): DictionaryObject({
+                NameObject("/S"): NameObject("/URI"),
+                NameObject("/URI"): TextStringObject(final_result_url)
+            }),
+            NameObject("/F"): FloatObject(4),
+        })
         
-#         if "/Annots" in first_page:
-#             first_page[NameObject("/Annots")].append(annotation)
-#         else:
-#             first_page[NameObject("/Annots")] = ArrayObject([annotation])
+        if "/Annots" in first_page:
+            first_page[NameObject("/Annots")].append(annotation)
+        else:
+            first_page[NameObject("/Annots")] = ArrayObject([annotation])
         
-#         output.add_page(first_page)
+        output.add_page(first_page)
         
-#         for page_num in range(1, len(original_pdf.pages)):
-#             output.add_page(original_pdf.pages[page_num])
+        for page_num in range(1, len(original_pdf.pages)):
+            output.add_page(original_pdf.pages[page_num])
         
-#         with open(modified_pdf_path, "wb") as output_file:
-#             output.write(output_file)
+        with open(modified_pdf_path, "wb") as output_file:
+            output.write(output_file)
         
-#         print("Programmatic button created successfully")
-#         return modified_pdf_path
+        print("Programmatic button created successfully")
+        return modified_pdf_path
         
-#     except Exception as e:
-#         raise Exception(f"Error creating programmatic button: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Error creating programmatic button: {str(e)}")
 
-# def add_play_video_button_to_docx_with_image(original_docx_path, original_filename, final_result_url):
-#     """
-#     Add Play Video button to DOCX using image (simplified - will use text for DOCX)
-#     """
-#     try:
-#         from docx import Document
-#         from docx.shared import Pt, Inches
-#         from docx.enum.text import WD_ALIGN_PARAGRAPH
+def add_play_video_button_to_docx_with_image(original_docx_path, original_filename, final_result_url):
+    """
+    Add Play Video button to DOCX using image (simplified - will use text for DOCX)
+    """
+    try:
+        from docx import Document
+        from docx.shared import Pt, Inches
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
         
-#         print("Starting DOCX processing...")
+        print("Starting DOCX processing...")
         
-#         # Create a temporary file for the modified DOCX
-#         temp_dir = tempfile.gettempdir()
-#         safe_filename = f"enhanced_{os.path.basename(original_docx_path)}"
-#         modified_docx_path = os.path.join(temp_dir, safe_filename)
+        # Create a temporary file for the modified DOCX
+        temp_dir = tempfile.gettempdir()
+        safe_filename = f"enhanced_{os.path.basename(original_docx_path)}"
+        modified_docx_path = os.path.join(temp_dir, safe_filename)
         
-#         # Load the original document
-#         doc = Document(original_docx_path)
+        # Load the original document
+        doc = Document(original_docx_path)
         
-#         # Create a table for precise positioning
-#         table = doc.add_table(rows=1, cols=1)
-#         table.autofit = False
-#         table.columns[0].width = Inches(6.5)  # Control width
+        # Create a table for precise positioning
+        table = doc.add_table(rows=1, cols=1)
+        table.autofit = False
+        table.columns[0].width = Inches(6.5)  # Control width
         
-#         # Get the cell and set alignment to right
-#         cell = table.cell(0, 0)
+        # Get the cell and set alignment to right
+        cell = table.cell(0, 0)
         
-#         # Create paragraph in the cell
-#         button_paragraph = cell.paragraphs[0]
-#         button_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        # Create paragraph in the cell
+        button_paragraph = cell.paragraphs[0]
+        button_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         
-#         # Add the button text (for DOCX, we use text since adding images is complex)
-#         run = button_paragraph.add_run("▶ Play Video")
-#         run.font.bold = True
-#         run.font.size = Pt(8)
-#         run.font.color.rgb = None  # Default color
+        # Add the button text (for DOCX, we use text since adding images is complex)
+        run = button_paragraph.add_run("▶ Play Video")
+        run.font.bold = True
+        run.font.size = Pt(8)
+        run.font.color.rgb = None  # Default color
         
-#         # Add some styling to make it look like a button
-#         from docx.oxml.ns import qn
-#         from docx.oxml import OxmlElement
+        # Add some styling to make it look like a button
+        from docx.oxml.ns import qn
+        from docx.oxml import OxmlElement
         
-#         # Add background color
-#         rPr = run._r.get_or_add_rPr()
-#         shading = OxmlElement('w:shd')
-#         shading.set(qn('w:fill'), "4DABF5")  # Light blue
-#         rPr.append(shading)
+        # Add background color
+        rPr = run._r.get_or_add_rPr()
+        shading = OxmlElement('w:shd')
+        shading.set(qn('w:fill'), "4DABF5")  # Light blue
+        rPr.append(shading)
         
-#         # Move table to top of document
-#         doc._body._element.insert(0, table._tbl)
+        # Move table to top of document
+        doc._body._element.insert(0, table._tbl)
         
-#         # Add spacing
-#         button_paragraph.paragraph_format.space_after = Pt(10)
+        # Add spacing
+        button_paragraph.paragraph_format.space_after = Pt(10)
         
-#         # Save modified document
-#         doc.save(modified_docx_path)
+        # Save modified document
+        doc.save(modified_docx_path)
         
-#         print("DOCX enhancement completed successfully")
-#         return modified_docx_path
+        print("DOCX enhancement completed successfully")
+        return modified_docx_path
         
-#     except ImportError as e:
-#         raise Exception(f"Required packages not installed: {e}. Install with: pip install python-docx")
-#     except Exception as e:
+    except ImportError as e:
+        raise Exception(f"Required packages not installed: {e}. Install with: pip install python-docx")
+    except Exception as e:
 
-#         raise Exception(f"Error processing DOCX: {str(e)}")
+        raise Exception(f"Error processing DOCX: {str(e)}")
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
@@ -1572,6 +1572,7 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
+
 
 
 
