@@ -160,23 +160,22 @@ def auth_page(request):
         
     if request.method == 'POST':
         if 'signup' in request.POST:
-            # Handle signup logic
             email = request.POST.get('email')
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             password1 = request.POST.get('password1')
             password2 = request.POST.get('password2')
-
+        
             # Validate passwords
             if password1 != password2:
                 messages.error(request, 'Passwords do not match.')
                 return redirect('auth')
-
+        
             # Check if the email already exists
             if CustomUser.objects.filter(email=email).exists():
                 messages.error(request, 'Email already in use.')
                 return redirect('auth')
-
+        
             # Create user
             user = CustomUser.objects.create_user(
                 username=email.split('@')[0],  # Can generate username based on email
@@ -185,15 +184,18 @@ def auth_page(request):
                 first_name=first_name,
                 last_name=last_name
             )
+        
+            # Ensure the user is saved
             user.save()
-
-            # Send OTP and proceed as before (if needed)
+        
+            # Send OTP and proceed as before
             otp_code = generate_otp()
             user.otp = otp_code
             user.otp_created_at = timezone.now()
-            user.save()
+            user.save()  # Save OTP and timestamp after user creation
+        
             send_otp_email(email, otp_code)
-
+        
             request.session['email_for_verification'] = email
             messages.success(request, f'OTP sent to {email}')
             return redirect('verify_otp')
@@ -1042,6 +1044,7 @@ def add_play_video_button_to_docx_with_image(original_docx_path, original_filena
     except Exception as e:
 
         raise Exception(f"Error processing DOCX: {str(e)}")
+
 
 
 
