@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
 import os
+from django.conf import settings
+
 
 def resume_upload_path(instance, filename):
     return f'resumes/user_{instance.user.id}/{filename}'
@@ -55,5 +57,6 @@ class CareerCast(models.Model):
 
     def __str__(self):
         return self.job_title
+
 
 
