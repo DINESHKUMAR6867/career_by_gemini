@@ -11,7 +11,12 @@ def resume_upload_path(instance, filename):
 def video_upload_path(instance, filename):
     return f'videos/user_{instance.user.id}/{filename}'
 
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+import uuid
+
 class CustomUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # Set UUID as primary key
     email = models.EmailField(unique=True)
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
@@ -27,22 +32,25 @@ class CustomUser(AbstractUser):
 
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='customuser_set',  # This is the key fix for avoiding clashes
+        related_name='customuser_set',
         blank=True,
         help_text='The groups this user belongs to.'
     )
     
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='customuser_permissions',  # This is the key fix for avoiding clashes
+        related_name='customuser_permissions',
         blank=True,
         help_text='Specific permissions for this user.'
     )
 
+from django.db import models
+import uuid
+from django.conf import settings
+
 class CareerCast(models.Model):
-    # In your models.py for CareerCast
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # Use UUID for primary key
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-# Link to CustomUser
     job_title = models.CharField(max_length=255)
     job_description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -57,6 +65,8 @@ class CareerCast(models.Model):
 
     def __str__(self):
         return self.job_title
+
+
 
 
 
