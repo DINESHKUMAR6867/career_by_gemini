@@ -90,16 +90,27 @@ import dj_database_url
 #         'OPTIONS': {'sslmode': 'require'},
 #     }
 # }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',  # This is the database name
+#         'USER': 'postgres',  # Your Supabase PostgreSQL username
+#         'PASSWORD': 'Dinesh@123',  # Your password
+#         'HOST': 'db.frdgrrfguukmqhmymott.supabase.co',  # The host from your URL
+#         'PORT': '5432',  # Default PostgreSQL port
+#     }
+# }
+
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',  # This is the database name
-        'USER': 'postgres',  # Your Supabase PostgreSQL username
-        'PASSWORD': 'Dinesh@123',  # Your password
-        'HOST': 'db.frdgrrfguukmqhmymott.supabase.co',  # The host from your URL
-        'PORT': '5432',  # Default PostgreSQL port
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),  # Make sure DATABASE_URL is set in your environment variables
+        conn_max_age=600,  # For better performance in production
+        ssl_require=True  # This forces SSL connection to the database
+    )
 }
+
 
 
 
@@ -341,6 +352,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ─── DEFAULT PRIMARY KEY ─────────────────────────────────
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 
 
