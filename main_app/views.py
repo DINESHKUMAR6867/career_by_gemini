@@ -1185,10 +1185,6 @@
 
 #         raise Exception(f"Error processing DOCX: {str(e)}")
 
-
-
-
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -1197,6 +1193,7 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt  # ADD THIS IMPORT
 from .models import CustomUser, CareerCast
 import json
 import random
@@ -1537,23 +1534,7 @@ def logout_view(request):
     messages.success(request, 'You have been logged out successfully.')
     return redirect('landing')
 
-# Remove or fix download_enhanced_resume if not working
 @login_required
 def download_enhanced_resume(request, cast_id):
     messages.info(request, 'This feature is temporarily unavailable.')
     return redirect('final_result', cast_id=cast_id)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
